@@ -175,7 +175,46 @@ namespace Truck.Controllers
         }
 
 
+        [AllowAnonymous]
+        [HttpPost("[action]")]
+        public async Task<ActionResult<ApiResponse<AuthData>>> UserLogin(LoginModel model)
+        {
+            var user = await _context.AppUsers.Where(x => x.Pin == model.pin).FirstOrDefaultAsync();
+            if (user != null)
+            {
+                SymmetricSecurityKey symmentricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration.GetValue<string>("JwtOptions:SecurityKey")));
+                SigningCredentials signingCredentials = new SigningCredentials(symmentricSecurityKey, SecurityAlgorithms.HmacSha256Signature);
+                List<Claim> claims = new List<Claim>
+                {
+                    new Claim("mobile", user.mobile),
+                    //new Claim("UserID", Adminuser.userid.ToString()),
+                    //new Claim(ClaimTypes.Name, Adminuser.fullName),
+                    //new Claim(ClaimTypes.Role,"Admin")
+                };
 
+                JwtSecurityToken token = new JwtSecurityToken(
+                       issuer: Configuration.GetValue<string>("JwtOptions:Issuer"),
+                       audience: Configuration.GetValue<string>("JwtOptions:Audience"),
+                       expires: DateTime.Now.AddDays(1),
+                       signingCredentials: signingCredentials,
+                       claims: claims
+                   );
+                AuthData data = new AuthData
+                {
+                    accessToken = new JwtSecurityTokenHandler().WriteToken(token),
+                    mobile = user.mobile,
+                    //imagePath = contact.user.photoPath,
+                    //name = contact.user.fullName,
+                    //roles = contact.user.IUserRoles.Select(x => x.role).ToList()
+                };
+
+
+                return new ApiResponse<AuthData> { code = 1, message = "success", data = data };
+
+            }
+
+            return new ApiResponse<AuthData> { code = 0, message = "Invalid Pin" };
+        }
 
     }
 }

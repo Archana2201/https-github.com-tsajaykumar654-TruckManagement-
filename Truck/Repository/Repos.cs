@@ -28,7 +28,7 @@ namespace Truck.Repository
             _environment = environment;
         }
 
-        //public int UserID => int.Parse(((ClaimsIdentity)_httpContext.HttpContext.User.Identity).FindFirst("UserID").Value);
+        public string mobile => ((ClaimsIdentity)_httpContext.HttpContext.User.Identity).FindFirst("mobile").Value;
         //public int BrandID => int.Parse(((ClaimsIdentity)_httpContext.HttpContext.User.Identity).FindFirst("BrandID").Value);
 
 

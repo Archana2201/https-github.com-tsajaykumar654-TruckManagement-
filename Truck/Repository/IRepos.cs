@@ -7,8 +7,10 @@ namespace Truck.Repository
 {
     public interface IRepos
     {
-    //    int UserID { get; }
-    //    int BrandID { get; }
+        //    int UserID { get; }
+        //    int BrandID { get; }
+
+        string mobile { get; }
         string Encrypt(string stringToEncrypt);
         string Decrypt(string stringToDecrypt);
         Task<bool> SendVerifyEmail(string email, string To = null);

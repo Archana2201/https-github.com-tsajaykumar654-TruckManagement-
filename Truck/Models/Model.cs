@@ -85,6 +85,50 @@ namespace Truck.Models
         public int userID { get; set; }
     }
 
+    public class LoginModel
+    {
+        public string email { get; set; }
+        public string password { get; set; }
+        public string fcmID { get; set; }
+        public string deviceID { get; set; }
+
+        public string pin { get; set; }
+    }
+
+    public class AppUserForm
+    {
+        public string fullName { get; set; }
+        public string mobile { get; set; }
+        public string email { get; set; }
+        
+        public DateTime? dateOfBirth { get; set; }
+        public string profileImage { get; set; }
+        public string pancard { get; set; }
+        public string aadharcard { get; set; }
+        public string gender { get; set; }
+        public string Address { get; set; }
+      
+        public string pincode { get; set; }
+        public int? cityID { get; set; }
+        public int? stateID { get; set; }
+        public int? countryID { get; set; }
+    }
+    public class AuthData
+    {
+        public string accessToken { get; set; }
+        public string mobile { get; set; }
+        public string name { get; set; }
+        public string email { get; set; }
+        public string image { get; set; }
+        public int userID { get; set; }
+        public bool isAdmin { get; set; }
+        public string role { get; set; }
+
+        public int pin { get; set; }
+
+
+
+    }
     public class AppUserRegistration
     {
         public string fullName { get; set; }
