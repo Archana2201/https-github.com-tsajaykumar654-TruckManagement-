@@ -21,6 +21,7 @@ namespace Truck.Controllers
     [Route("api/[controller]")]
     [ApiExplorerSettings(GroupName = "v1")]
     [ApiController]
+
     public class AdminController : ControllerBase
     {
         private readonly TruckContext _context;
