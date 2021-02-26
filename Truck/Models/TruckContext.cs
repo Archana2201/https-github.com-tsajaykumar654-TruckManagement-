@@ -41,6 +41,9 @@ namespace Truck.Models
         public virtual DbSet<Teams_Role> Teams_Roles { get; set; }
         public virtual DbSet<Theme> Themes { get; set; }
         public virtual DbSet<Truck_RenewalType> Truck_RenewalTypes { get; set; }
+        public virtual DbSet<Vehicle_Company_Master> Vehicle_Company_Masters { get; set; }
+        public virtual DbSet<Vehicle_Document> Vehicle_Documents { get; set; }
+        public virtual DbSet<Vehicle_Model_Master> Vehicle_Model_Masters { get; set; }
         public virtual DbSet<Vehicle_Period> Vehicle_Periods { get; set; }
         public virtual DbSet<Vehicle_Renewal_Info> Vehicle_Renewal_Infos { get; set; }
         public virtual DbSet<Vehicle_Renewal_Master> Vehicle_Renewal_Masters { get; set; }
@@ -80,6 +83,10 @@ namespace Truck.Models
 
                 entity.Property(e => e.Pin)
                     .HasMaxLength(45)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.company)
+                    .HasMaxLength(50)
                     .IsUnicode(false);
 
                 entity.Property(e => e.createdDate).HasPrecision(0);
@@ -591,6 +598,65 @@ namespace Truck.Models
                     .IsUnicode(false);
             });
 
+            modelBuilder.Entity<Vehicle_Company_Master>(entity =>
+            {
+                entity.HasKey(e => e.VehicleCompany_ID);
+
+                entity.ToTable("Vehicle_Company_Master");
+
+                entity.Property(e => e.VehicleCompany_Name)
+                    .HasMaxLength(250)
+                    .IsUnicode(false);
+            });
+
+            modelBuilder.Entity<Vehicle_Document>(entity =>
+            {
+                entity.HasKey(e => e.VehicleDocuments_ID)
+                    .HasName("PK_VehicleDocuments_ID");
+
+                entity.Property(e => e.Expiry_Date).HasPrecision(0);
+
+                entity.Property(e => e.Insurance_Company)
+                    .IsRequired()
+                    .HasMaxLength(50);
+
+                entity.Property(e => e.Registered_Date).HasPrecision(0);
+
+                entity.Property(e => e.Vehicle_BackImage)
+                    .IsRequired()
+                    .HasMaxLength(200);
+
+                entity.Property(e => e.Vehicle_FrontImage)
+                    .IsRequired()
+                    .HasMaxLength(200);
+
+                entity.HasOne(d => d.FK_Period)
+                    .WithMany(p => p.Vehicle_Documents)
+                    .HasForeignKey(d => d.FK_Period_ID)
+                    .HasConstraintName("FK_FK_Period_ID_Vehicle_Documents");
+
+                entity.HasOne(d => d.FK_VehicleRenewal)
+                    .WithMany(p => p.Vehicle_Documents)
+                    .HasForeignKey(d => d.FK_VehicleRenewal_ID)
+                    .HasConstraintName("FK_Vehicle_Renewal_Info_Vehicle_Documents");
+
+                entity.HasOne(d => d.FK_VehicleRenewalinfo)
+                    .WithMany(p => p.Vehicle_Documents)
+                    .HasForeignKey(d => d.FK_VehicleRenewalinfo_ID)
+                    .HasConstraintName("FK_Vehicle_RenewalInfoID__Vehicle_Documents");
+            });
+
+            modelBuilder.Entity<Vehicle_Model_Master>(entity =>
+            {
+                entity.HasKey(e => e.VehicleModel_ID);
+
+                entity.ToTable("Vehicle_Model_Master");
+
+                entity.Property(e => e.VehicleModel_Name)
+                    .HasMaxLength(250)
+                    .IsUnicode(false);
+            });
+
             modelBuilder.Entity<Vehicle_Period>(entity =>
             {
                 entity.HasKey(e => e.VehiclePeriod_ID)
@@ -621,17 +687,13 @@ namespace Truck.Models
                     .IsRequired()
                     .HasMaxLength(200);
 
-                entity.Property(e => e.Vehicle_Company)
-                    .IsRequired()
-                    .HasMaxLength(50);
-
                 entity.Property(e => e.Vehicle_FrontImage)
                     .IsRequired()
                     .HasMaxLength(200);
 
-                entity.Property(e => e.Vehicle_Model)
-                    .IsRequired()
-                    .HasMaxLength(50);
+                entity.Property(e => e.Vehicle_ModelNumber)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
 
                 entity.Property(e => e.Vehicle_Name)
                     .IsRequired()
@@ -650,6 +712,16 @@ namespace Truck.Models
                     .WithMany(p => p.Vehicle_Renewal_Infos)
                     .HasForeignKey(d => d.FK_VehicleRenewal_ID)
                     .HasConstraintName("FK_Vehicle_Renewal_Info");
+
+                entity.HasOne(d => d.Vehicle_Company)
+                    .WithMany(p => p.Vehicle_Renewal_Infos)
+                    .HasForeignKey(d => d.Vehicle_Company_ID)
+                    .HasConstraintName("FK_Vehicle_Company_ID");
+
+                entity.HasOne(d => d.Vehicle_Model)
+                    .WithMany(p => p.Vehicle_Renewal_Infos)
+                    .HasForeignKey(d => d.Vehicle_Model_ID)
+                    .HasConstraintName("FK_Vehicle_Model_ID");
             });
 
             modelBuilder.Entity<Vehicle_Renewal_Master>(entity =>

@@ -108,7 +108,7 @@ namespace Truck.Controllers
             }
 
             appUser.fullName = form.fullName;
-            //appUser.company = form.company;
+            appUser.company = form.company;
             appUser.email = form.email;
             appUser.stateID = form.stateID;
             appUser.cityID = form.cityID;
@@ -117,71 +117,167 @@ namespace Truck.Controllers
             appUser.gender = form.gender;
             appUser.pincode = form.pincode;
             appUser.dateOfBirth = form.dateOfBirth;
-           
+
 
             _context.Entry(appUser).State = EntityState.Modified;
             try
             {
                 await _context.SaveChangesAsync();
             }
-            catch
+            catch (Exception ex)
             {
-                return new ApiResponse<AppUser> { code = 0, message = "" };
+                return new ApiResponse<AppUser> { code = 0, message = "Error" };
             }
-            return new ApiResponse<AppUser> { code = 1, message = "" };
+            return new ApiResponse<AppUser> { code = 1, message = "Success" };
         }
 
-        //[HttpPost("[action]")]
-        //public async Task<ActionResult<ApiResponse<VehiclesModel>>> CreateOrUpdateVehicles(VehiclesModel model)
-        //{
-        //    try
-        //    {
-        //        var vehicles = await _context.veh.Where(x => x.BrandID == model.brandid).FirstOrDefaultAsync();
 
-        //        Ecom_Brand_Appsettings Settings = (Appsettings == null) ? new Ecom_Brand_Appsettings() : Appsettings;
+        [HttpGet("[action]")]
+        public async Task<ActionResult<ApiResponse<List<Select>>>> VehicleCompanyDDL()
+        {
+            var list = await _context.Vehicle_Company_Masters.Select(x => new Select
+            {
+                name = x.VehicleCompany_Name,
+                value = x.VehicleCompany_ID
+            }).ToListAsync();
+            return new ApiResponse<List<Select>> { code = 1, data = list };
+        }
 
-        //        if (model.imageFile != null)
-        //        {
-        //            if (model.imageFile.FileName.Length > 0)
-        //            {
-        //                if (!model.extension.Contains("."))
-        //                    model.extension = "." + model.extension;
+        [HttpGet("[action]")]
+        public async Task<ActionResult<ApiResponse<List<Select>>>> VehicleModelDDL()
+        {
+            var list = await _context.Vehicle_Model_Masters.Select(x => new Select
+            {
+                name = x.VehicleModel_Name,
+                value = x.VehicleModel_ID
+            }).ToListAsync();
+            return new ApiResponse<List<Select>> { code = 1, data = list };
+        }
 
-        //                string FullPath = await _storage.Save(model.imageFile, "/EcomApp", model.extension);
-        //                //save image else leave
-        //                Settings.AppLogo = FullPath;
-        //            }
-        //        }
+        [HttpGet("[action]")]
+        public async Task<ActionResult<ApiResponse<List<Select>>>> UserVehicleModelDDL()
+        {
+            var list = await _context.Vehicle_Renewal_Infos.Select(x => new Select
+            {
+                name = x.Vehicle_Number,
+                value = x.VehicleRenewalInfo_ID
+            }).ToListAsync();
+            return new ApiResponse<List<Select>> { code = 1, data = list };
+        }
 
-        //        model.appName = model.appName.TrimStart().TrimEnd();
 
-        //        Settings.AppName = (string.IsNullOrEmpty(model.appName)) ? Settings.AppName : model.appName;
-        //        Settings.BrandID = (model.brandid == 0) ? Settings.BrandID : model.brandid;
+        [HttpGet("[action]")]
+        public async Task<ActionResult<ApiResponse<List<Select>>>> VehicleRenewalTypeDDL()
+        {
+            var list = await _context.Vehicle_Renewal_Masters.Select(x => new Select
+            {
+                name = x.VehicleRenewal_Name,
+                value = x.VehicleRenewal_ID
+            }).ToListAsync();
+            return new ApiResponse<List<Select>> { code = 1, data = list };
+        }
 
-        //        Settings.PrimaryColor = (string.IsNullOrEmpty(model.primaryColor)) ? Settings.PrimaryColor : model.primaryColor;
-        //        Settings.CardColor = (string.IsNullOrEmpty(model.cardColor)) ? Settings.CardColor : model.cardColor;
-        //        Settings.fontFamily = (string.IsNullOrEmpty(model.fontFamily)) ? Settings.fontFamily : model.fontFamily;
-        //        Settings.FontSize = (model.fontSize == 0) ? Settings.FontSize : model.fontSize;
-        //        Settings.isDarkTheme = model.isDarkTheme;
-        //        Settings.HintHightlightColor = (string.IsNullOrEmpty(model.hintHightlightColor)) ? Settings.HintHightlightColor : model.hintHightlightColor;
-        //        Settings.buttonColor = (string.IsNullOrEmpty(model.buttonColor)) ? Settings.buttonColor : model.buttonColor;
-        //        Settings.Razorkey = (string.IsNullOrEmpty(model.razorkey)) ? Settings.Razorkey : model.razorkey;
-        //        Settings.RazorPaySecretAccesskey = (string.IsNullOrEmpty(model.razorPaySecretAccesskey)) ? Settings.RazorPaySecretAccesskey : model.razorPaySecretAccesskey;
-        //        Settings.Shipping_Charge = (model.Shipping_Charge == 0) ? Settings.Shipping_Charge : model.Shipping_Charge;
-        //        if (Appsettings == null)
-        //        {
-        //            _context.Ecom_Brand_Appsettings.Add(Settings);
-        //        }
+        [HttpGet("[action]")]
+        public async Task<ActionResult<ApiResponse<List<Select>>>> VehicleInsuranceDDL()
+        {
+            var list = await _context.Insurances.Select(x => new Select
+            {
+                name = x.Insurance_Type,
+                value = x.Insurance_ID
+            }).ToListAsync();
+            return new ApiResponse<List<Select>> { code = 1, data = list };
+        }
 
-        //        await _context.SaveChangesAsync();
+        [HttpGet("[action]")]
+        public async Task<ActionResult<ApiResponse<List<Select>>>> VehiclePeriodDDL()
+        {
+            var list = await _context.Vehicle_Periods.Select(x => new Select
+            {
+                name = x.VehiclePeriod_Type,
+                value = x.VehiclePeriod_ID
+            }).ToListAsync();
+            return new ApiResponse<List<Select>> { code = 1, data = list };
+        }
 
-        //        return new ApiResponse<EcomSettingsModel> { code = 1, message = "Successfull" };
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return new ApiResponse<EcomSettingsModel> { code = 0, message = ex.Message, data = null };
-        //    }
-        //}
+        [HttpPost("[action]")]
+        public async Task<ActionResult<ApiResponse<VehicleInfoModel>>> CreateOrUpdateVehicle(VehicleInfoModel model)
+        {
+            try
+            {
+                var vehicle = await _context.Vehicle_Renewal_Infos.Where(x => x.VehicleRenewalInfo_ID == model.VehicleRenewalInfo_ID).FirstOrDefaultAsync();
+                Vehicle_Renewal_Info vehicleinfo = (vehicle == null) ? new Vehicle_Renewal_Info() : vehicle;
+
+                model.Vehicle_Number = model.Vehicle_Number.TrimStart().TrimEnd();
+
+                vehicleinfo.Vehicle_Model_ID = (model.Vehicle_Model_ID == 0) ? vehicleinfo.Vehicle_Model_ID : model.Vehicle_Model_ID;
+                vehicleinfo.Vehicle_Number = (string.IsNullOrEmpty(model.Vehicle_Number)) ? vehicleinfo.Vehicle_Number : model.Vehicle_Number;
+                vehicleinfo.VehicleRenewalInfo_ID = (model.VehicleRenewalInfo_ID == 0) ? vehicleinfo.VehicleRenewalInfo_ID : model.VehicleRenewalInfo_ID;
+                vehicleinfo.Vehicle_ModelNumber = (string.IsNullOrEmpty(model.Vehicle_ModelNumber)) ? vehicleinfo.Vehicle_ModelNumber : model.Vehicle_ModelNumber;
+                vehicleinfo.Vehicle_Company_ID = (model.Vehicle_Company_ID == 0) ? vehicleinfo.Vehicle_Company_ID : model.Vehicle_Company_ID;
+                vehicleinfo.vehicle_type = model.vehicle_type;//0--Personal n 1--Corporate
+                if (vehicle == null)
+                {
+                    _context.Vehicle_Renewal_Infos.Add(vehicleinfo);
+                }
+
+                await _context.SaveChangesAsync();
+
+                return new ApiResponse<VehicleInfoModel> { code = 1, message = "Successfull" };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<VehicleInfoModel> { code = 0, message = ex.Message, data = null };
+            }
+        }
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult<ApiResponse<VehicleDocumentModel>>> UploadDocuments(VehicleDocumentModel model)
+        {
+            try
+            {
+                var vehicle = await _context.Vehicle_Documents.Where(x => x.VehicleDocuments_ID == model.VehicleDocuments_ID).FirstOrDefaultAsync();
+                Vehicle_Document vehicledocs = (vehicle == null) ? new Vehicle_Document() : vehicle;
+
+                if (!string.IsNullOrEmpty(model.Vehicle_FrontImage))
+                {
+                    if (vehicledocs.Vehicle_FrontImage != "/images/profile-picture/default.png")
+                    {
+                        await _storage.DeleteIfExists(vehicledocs.Vehicle_FrontImage);
+                    }
+                    vehicledocs.Vehicle_FrontImage = await _storage.Save(model.Vehicle_FrontImage, "/Vehicle-Docs");
+                }
+                if (!string.IsNullOrEmpty(model.Vehicle_BackImage))
+                {
+                    if (vehicledocs.Vehicle_BackImage != "/images/profile-picture/default.png")
+                    {
+                        await _storage.DeleteIfExists(vehicledocs.Vehicle_BackImage);
+                    }
+                    vehicledocs.Vehicle_BackImage = await _storage.Save(model.Vehicle_BackImage, "/Vehicle-Docs");
+                }
+
+                vehicledocs.Registered_Date = model.Registered_Date;
+                vehicledocs.Expiry_Date = model.Expiry_Date;
+                vehicledocs.FK_VehicleRenewal_ID = model.FK_VehicleRenewal_ID;
+                vehicledocs.Insurance_Company = (string.IsNullOrEmpty(model.Insurance_Company)) ? vehicledocs.Insurance_Company : model.Insurance_Company;
+                vehicledocs.FK_Period_ID = (model.FK_Period_ID == 0) ? vehicledocs.FK_Period_ID : model.FK_Period_ID;
+                vehicledocs.FK_VehicleRenewal_ID = (model.FK_VehicleRenewal_ID == 0) ? vehicledocs.FK_VehicleRenewal_ID : model.FK_VehicleRenewal_ID;
+
+                if (vehicle == null)
+                {
+                    _context.Vehicle_Documents.Add(vehicledocs);
+                }
+
+                await _context.SaveChangesAsync();
+
+                return new ApiResponse<VehicleDocumentModel> { code = 1, message = "Successfull" };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<VehicleDocumentModel> { code = 0, message = ex.Message, data = null };
+            }
+        }
+
+
 
     }
 }

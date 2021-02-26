@@ -18,7 +18,7 @@ namespace Truck.Models
     public class PageModel
     {
         public string pagename { get; set; }
-      
+
         public List<MenuModel> menus { get; set; }
     }
 
@@ -48,7 +48,7 @@ namespace Truck.Models
     }
     public class LanguageMappingMasterModel
     {
-        
+
         public int? Fk_Language_ID { get; set; }
         public int? Fk_Page_ID { get; set; }
         public int? Fk_Menu_ID { get; set; }
@@ -100,14 +100,14 @@ namespace Truck.Models
         public string fullName { get; set; }
         public string mobile { get; set; }
         public string email { get; set; }
-        
+
         public DateTime? dateOfBirth { get; set; }
         public string profileImage { get; set; }
         public string pancard { get; set; }
         public string aadharcard { get; set; }
         public string gender { get; set; }
         public string Address { get; set; }
-      
+        public string company { get; set; }
         public string pincode { get; set; }
         public int? cityID { get; set; }
         public int? stateID { get; set; }
@@ -138,4 +138,61 @@ namespace Truck.Models
         public string userName { get; set; }
         public string ReferalCode { get; set; }
     }
+
+    public class VehicleCompanyModel
+    {
+
+        public int VehicleCompany_ID { get; set; }
+
+        public string VehicleCompany_Name { get; set; }
+
+
+    }
+
+    public class VehicleModel
+    {
+
+        public int VehicleModel_ID { get; set; }
+
+        public string VehicleModel_Name { get; set; }
+
+
+    }
+
+    public  class VehicleInfoModel
+    {
+        public int VehicleRenewalInfo_ID { get; set; }
+        public int? FK_VehicleRenewal_ID { get; set; }
+        public DateTime Registered_Date { get; set; }
+        public DateTime Expiry_Date { get; set; }
+        public string Vehicle_FrontImage { get; set; }
+        public string Vehicle_BackImage { get; set; }
+        public string Insurance_Company { get; set; }
+        public string Vehicle_ModelNumber { get; set; }
+        
+        public int? FK_Period_ID { get; set; }
+        public string Vehicle_Name { get; set; }
+        public string Vehicle_Number { get; set; }
+        public int? Vehicle_Company_ID { get; set; }
+        public int? Vehicle_Model_ID { get; set; }
+
+        public bool vehicle_type { get; set; }
+    }
+
+    public  class VehicleDocumentModel
+    {
+        public int VehicleDocuments_ID { get; set; }
+        public int? FK_VehicleRenewal_ID { get; set; }
+        public int? FK_VehicleRenewalinfo_ID { get; set; }
+        public DateTime Registered_Date { get; set; }
+        public DateTime Expiry_Date { get; set; }
+        public string Vehicle_FrontImage { get; set; }
+        public string Vehicle_BackImage { get; set; }
+        public string Insurance_Company { get; set; }
+        public int? FK_Period_ID { get; set; }
+
+      
+    }
+
+
 }

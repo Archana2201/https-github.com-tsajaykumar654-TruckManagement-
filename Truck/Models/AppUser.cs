@@ -40,6 +40,7 @@ namespace Truck.Models
         public string OTP { get; set; }
         public DateTime? OTPExpireTime { get; set; }
         public string Pin { get; set; }
+        public string company { get; set; }
 
         public virtual City city { get; set; }
         public virtual Country country { get; set; }

@@ -34,7 +34,6 @@ namespace Truck.Controllers
         }
 
 
-
         [HttpPost("[action]")]
         public async Task<ActionResult<ApiResponse<LanguageMasterModel>>> CreateLanguageMaster(LanguageMasterModel form)
         {
@@ -152,7 +151,6 @@ namespace Truck.Controllers
             }
         }
 
-
         [HttpPost("[action]")]
         public async Task<ActionResult<ApiResponse<int>>> CreateMenuLanguageMapping(LangMenuModel model)
         {
@@ -241,8 +239,59 @@ namespace Truck.Controllers
             }
         }
 
+        [HttpPost("[action]")]
+        public async Task<ActionResult<ApiResponse<VehicleCompanyModel>>> CreateOrUpdateVehicleCompany(VehicleCompanyModel model)
+        {
+            try
+            {
+                var VehicleCompany = await _context.Vehicle_Company_Masters.Where(x => x.VehicleCompany_ID == model.VehicleCompany_ID).FirstOrDefaultAsync();
 
-       
+                Vehicle_Company_Master company = (VehicleCompany == null) ? new Vehicle_Company_Master() : VehicleCompany;
+                model.VehicleCompany_Name = model.VehicleCompany_Name.TrimStart().TrimEnd();
+                company.VehicleCompany_Name = (string.IsNullOrEmpty(model.VehicleCompany_Name)) ? company.VehicleCompany_Name : model.VehicleCompany_Name;
+                company.VehicleCompany_ID = (model.VehicleCompany_ID == 0) ? company.VehicleCompany_ID : model.VehicleCompany_ID;
+                if (VehicleCompany == null)
+                {
+                    _context.Vehicle_Company_Masters.Add(company);
+                }
+
+                await _context.SaveChangesAsync();
+
+                return new ApiResponse<VehicleCompanyModel> { code = 1, message = "Successfull" };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<VehicleCompanyModel> { code = 0, message = ex.Message, data = null };
+            }
+        }
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult<ApiResponse<VehicleModel>>> CreateOrUpdateVehiclemodel(VehicleModel model)
+        {
+            try
+            {
+                var Vehiclemodel = await _context.Vehicle_Model_Masters.Where(x => x.VehicleModel_ID == model.VehicleModel_ID).FirstOrDefaultAsync();
+
+                Vehicle_Model_Master vehiclemodels = (Vehiclemodel == null) ? new Vehicle_Model_Master() : Vehiclemodel;
+                model.VehicleModel_Name = model.VehicleModel_Name.TrimStart().TrimEnd();
+                vehiclemodels.VehicleModel_Name = (string.IsNullOrEmpty(model.VehicleModel_Name)) ? vehiclemodels.VehicleModel_Name : model.VehicleModel_Name;
+                vehiclemodels.VehicleModel_ID = (model.VehicleModel_ID == 0) ? vehiclemodels.VehicleModel_ID : model.VehicleModel_ID;
+                if (Vehiclemodel == null)
+                {
+                    _context.Vehicle_Model_Masters.Add(vehiclemodels);
+                }
+
+                await _context.SaveChangesAsync();
+
+                return new ApiResponse<VehicleModel> { code = 1, message = "Successfull" };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<VehicleModel> { code = 0, message = ex.Message, data = null };
+            }
+        }
+
+
 
     }
 }
