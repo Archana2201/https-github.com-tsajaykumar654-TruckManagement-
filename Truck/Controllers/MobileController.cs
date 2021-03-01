@@ -213,7 +213,7 @@ namespace Truck.Controllers
                 vehicleinfo.Vehicle_Number = (string.IsNullOrEmpty(model.Vehicle_Number)) ? vehicleinfo.Vehicle_Number : model.Vehicle_Number;
                 vehicleinfo.VehicleRenewalInfo_ID = (model.VehicleRenewalInfo_ID == 0) ? vehicleinfo.VehicleRenewalInfo_ID : model.VehicleRenewalInfo_ID;
                 vehicleinfo.Vehicle_ModelNumber = (string.IsNullOrEmpty(model.Vehicle_ModelNumber)) ? vehicleinfo.Vehicle_ModelNumber : model.Vehicle_ModelNumber;
-                vehicleinfo.Vehicle_Company_ID = (model.Vehicle_Company_ID == 0) ? vehicleinfo.Vehicle_Company_ID : model.Vehicle_Company_ID;
+               // vehicleinfo.Vehicle_Company_ID = (model.Vehicle_Company_ID == 0) ? vehicleinfo.Vehicle_Company_ID : model.Vehicle_Company_ID;
                 vehicleinfo.vehicle_type = model.vehicle_type;//0--Personal n 1--Corporate
                 if (vehicle == null)
                 {

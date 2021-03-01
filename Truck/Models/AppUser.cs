@@ -10,6 +10,11 @@ namespace Truck.Models
         public AppUser()
         {
             AppUserCredentials = new HashSet<AppUserCredential>();
+            Ecom_FavoriteListUserwises = new HashSet<Ecom_FavoriteListUserwise>();
+            Ecom_Invoices = new HashSet<Ecom_Invoice>();
+            Ecom_Orders = new HashSet<Ecom_Order>();
+            Ecom_Shippings = new HashSet<Ecom_Shipping>();
+            Ecom_ShoppingCarts = new HashSet<Ecom_ShoppingCart>();
             Navigation_Masters = new HashSet<Navigation_Master>();
             Products = new HashSet<Product>();
             Teams = new HashSet<Team>();
@@ -46,6 +51,11 @@ namespace Truck.Models
         public virtual Country country { get; set; }
         public virtual State state { get; set; }
         public virtual ICollection<AppUserCredential> AppUserCredentials { get; set; }
+        public virtual ICollection<Ecom_FavoriteListUserwise> Ecom_FavoriteListUserwises { get; set; }
+        public virtual ICollection<Ecom_Invoice> Ecom_Invoices { get; set; }
+        public virtual ICollection<Ecom_Order> Ecom_Orders { get; set; }
+        public virtual ICollection<Ecom_Shipping> Ecom_Shippings { get; set; }
+        public virtual ICollection<Ecom_ShoppingCart> Ecom_ShoppingCarts { get; set; }
         public virtual ICollection<Navigation_Master> Navigation_Masters { get; set; }
         public virtual ICollection<Product> Products { get; set; }
         public virtual ICollection<Team> Teams { get; set; }

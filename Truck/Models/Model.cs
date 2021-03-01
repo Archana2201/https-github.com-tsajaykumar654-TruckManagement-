@@ -149,6 +149,42 @@ namespace Truck.Models
 
     }
 
+    public  class ProductCategoryMasterModel
+    {
+        
+
+        public int ProductCategory_ID { get; set; }
+        public string Product_Type { get; set; }
+        public string Updated_By { get; set; }
+        public bool? IsActive { get; set; }
+        public DateTime? Last_Updated_Date { get; set; }
+        public string ProdCategory_Path { get; set; }
+
+        
+    }
+    public  class ProductModel
+    {
+        public int productID { get; set; }
+        public string Product_Name { get; set; }
+        public int? FK_ProductCategory_Id { get; set; }
+        public string Product_Description { get; set; }
+        public string Photo_Path { get; set; }
+        public decimal? MRP { get; set; }
+        public string Product_Load { get; set; }
+        public string Product_Manufacturer { get; set; }
+        public string Product_CountryOrigin { get; set; }
+        public string Product_CompanyName { get; set; }
+        public string Product_CompanyAddress { get; set; }
+        public string Product_CompanyContactNo { get; set; }
+        public int? Product_Brand { get; set; }
+        public int? Fk_User_ID { get; set; }
+        public int? PercentDiscount { get; set; }
+        public int? isActive { get; set; }
+        public DateTime? createdDate { get; set; }
+
+       
+    }
+
     public class VehicleModel
     {
 

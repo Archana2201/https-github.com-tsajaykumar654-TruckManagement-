@@ -25,6 +25,14 @@ namespace Truck.Models
         public virtual DbSet<ConfirmationRequest> ConfirmationRequests { get; set; }
         public virtual DbSet<Contact> Contacts { get; set; }
         public virtual DbSet<Country> Countries { get; set; }
+        public virtual DbSet<EcomOrderStatus_Master> EcomOrderStatus_Masters { get; set; }
+        public virtual DbSet<Ecom_FavoriteListUserwise> Ecom_FavoriteListUserwises { get; set; }
+        public virtual DbSet<Ecom_Invoice> Ecom_Invoices { get; set; }
+        public virtual DbSet<Ecom_Order> Ecom_Orders { get; set; }
+        public virtual DbSet<Ecom_OrderItem> Ecom_OrderItems { get; set; }
+        public virtual DbSet<Ecom_Order_ShipmentDetail> Ecom_Order_ShipmentDetails { get; set; }
+        public virtual DbSet<Ecom_Shipping> Ecom_Shippings { get; set; }
+        public virtual DbSet<Ecom_ShoppingCart> Ecom_ShoppingCarts { get; set; }
         public virtual DbSet<Insurance> Insurances { get; set; }
         public virtual DbSet<KYC> KYCs { get; set; }
         public virtual DbSet<Language> Languages { get; set; }
@@ -48,6 +56,15 @@ namespace Truck.Models
         public virtual DbSet<Vehicle_Renewal_Info> Vehicle_Renewal_Infos { get; set; }
         public virtual DbSet<Vehicle_Renewal_Master> Vehicle_Renewal_Masters { get; set; }
         public virtual DbSet<Wallet> Wallets { get; set; }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+                optionsBuilder.UseSqlServer("Server=103.50.212.140;Database=Truck;User Id=mavak;Password=Password@123;");
+            }
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -238,6 +255,236 @@ namespace Truck.Models
                 entity.Property(e => e.Country_Name)
                     .HasMaxLength(45)
                     .IsUnicode(false);
+            });
+
+            modelBuilder.Entity<EcomOrderStatus_Master>(entity =>
+            {
+                entity.HasKey(e => e.OrderStatus_ID)
+                    .HasName("PK_OrderStatus_ID");
+
+                entity.ToTable("EcomOrderStatus_Master");
+
+                entity.Property(e => e.Last_Updated_Date).HasColumnType("datetime");
+
+                entity.Property(e => e.OrderStatus)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+            });
+
+            modelBuilder.Entity<Ecom_FavoriteListUserwise>(entity =>
+            {
+                entity.HasKey(e => e.Favorate_ID)
+                    .HasName("Ecom_PK_Favorate_ID");
+
+                entity.ToTable("Ecom_FavoriteListUserwise");
+
+                entity.HasOne(d => d.FK_AppUser)
+                    .WithMany(p => p.Ecom_FavoriteListUserwises)
+                    .HasForeignKey(d => d.FK_AppUser_Id)
+                    .HasConstraintName("Ecom_FavorateLists$FK_AppUser_Id");
+
+                entity.HasOne(d => d.FK_Product)
+                    .WithMany(p => p.Ecom_FavoriteListUserwises)
+                    .HasForeignKey(d => d.FK_Product_Id)
+                    .HasConstraintName("Ecom_FavorateList$FK_Product_Id");
+            });
+
+            modelBuilder.Entity<Ecom_Invoice>(entity =>
+            {
+                entity.HasKey(e => e.Invoice_Id)
+                    .HasName("Ecom_PK_Invoice_ID");
+
+                entity.ToTable("Ecom_Invoice");
+
+                entity.Property(e => e.Invoice_Date).HasPrecision(0);
+
+                entity.Property(e => e.Invoice_Path)
+                    .HasMaxLength(200)
+                    .IsUnicode(false);
+
+                entity.HasOne(d => d.FK_AppUser)
+                    .WithMany(p => p.Ecom_Invoices)
+                    .HasForeignKey(d => d.FK_AppUser_Id)
+                    .HasConstraintName("Ecom_Invoice$FK_AppUser_Id");
+
+                entity.HasOne(d => d.FK_Order)
+                    .WithMany(p => p.Ecom_Invoices)
+                    .HasForeignKey(d => d.FK_Order_Id)
+                    .HasConstraintName("Ecom_Invoice$FK_Order_Id");
+            });
+
+            modelBuilder.Entity<Ecom_Order>(entity =>
+            {
+                entity.HasKey(e => e.Order_ID)
+                    .HasName("Ecom_PK_EcomOrders_productID");
+
+                entity.Property(e => e.CancelReason)
+                    .HasMaxLength(500)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Order_Date).HasColumnType("datetime");
+
+                entity.Property(e => e.Order_Discount).HasColumnType("decimal(11, 3)");
+
+                entity.Property(e => e.Order_GrandTotal).HasColumnType("decimal(11, 3)");
+
+                entity.Property(e => e.Order_SubTotal).HasColumnType("decimal(11, 3)");
+
+                entity.Property(e => e.Order_Tax).HasColumnType("decimal(11, 3)");
+
+                entity.Property(e => e.Order_Total).HasColumnType("decimal(11, 3)");
+
+                entity.Property(e => e.Payment_Status)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Razor_Order_Ids)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.HasOne(d => d.FK_AppUser)
+                    .WithMany(p => p.Ecom_Orders)
+                    .HasForeignKey(d => d.FK_AppUser_Id)
+                    .HasConstraintName("Ecom_Orders$FK_AppUser_Id");
+
+                entity.HasOne(d => d.Fk_Shipping)
+                    .WithMany(p => p.Ecom_Orders)
+                    .HasForeignKey(d => d.Fk_Shipping_id)
+                    .HasConstraintName("Ecom_Orders$FK_Shipping_Id");
+
+                entity.HasOne(d => d.OrderStatusNavigation)
+                    .WithMany(p => p.Ecom_Orders)
+                    .HasForeignKey(d => d.OrderStatus)
+                    .HasConstraintName("Ecom_Orders$FK_orderstatus_id");
+            });
+
+            modelBuilder.Entity<Ecom_OrderItem>(entity =>
+            {
+                entity.HasKey(e => e.OrderItems_ID)
+                    .HasName("Ecom_PK_OrderItems_productID");
+
+                entity.Property(e => e.Order_Date).HasPrecision(0);
+
+                entity.Property(e => e.Order_Price).HasColumnType("decimal(11, 3)");
+
+                entity.Property(e => e.Order_Tax).HasColumnType("decimal(11, 3)");
+
+                entity.Property(e => e.Product_Discount).HasColumnType("decimal(11, 3)");
+
+                entity.HasOne(d => d.FK_Order)
+                    .WithMany(p => p.Ecom_OrderItems)
+                    .HasForeignKey(d => d.FK_Order_Id)
+                    .HasConstraintName("Ecom_OrdersItems$FK_Product_Id");
+
+                entity.HasOne(d => d.FK_Product)
+                    .WithMany(p => p.Ecom_OrderItems)
+                    .HasForeignKey(d => d.FK_Product_Id)
+                    .HasConstraintName("Ecom_OrdersItems$FK_AppUser_Id");
+            });
+
+            modelBuilder.Entity<Ecom_Order_ShipmentDetail>(entity =>
+            {
+                entity.HasKey(e => e.oderShiptmentId);
+
+                entity.Property(e => e.shipmentCompany)
+                    .IsRequired()
+                    .HasMaxLength(250);
+
+                entity.Property(e => e.shipmentDate).HasColumnType("datetime");
+
+                entity.Property(e => e.shipmentID)
+                    .IsRequired()
+                    .HasMaxLength(150);
+
+                entity.HasOne(d => d.order)
+                    .WithMany(p => p.Ecom_Order_ShipmentDetails)
+                    .HasForeignKey(d => d.orderId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Ecom_Order_ShipmentDetails_Ecom_Orders");
+            });
+
+            modelBuilder.Entity<Ecom_Shipping>(entity =>
+            {
+                entity.HasKey(e => e.Shipment_ID)
+                    .HasName("Ecom_PK_Shipment_ID");
+
+                entity.ToTable("Ecom_Shipping");
+
+                entity.Property(e => e.City)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Created_Date).HasPrecision(0);
+
+                entity.Property(e => e.Email_Address)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.FullName)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.PhoneNos)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.PostCode)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Shipment_Status)
+                    .IsRequired()
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Shipping_Address)
+                    .HasMaxLength(500)
+                    .IsUnicode(false);
+
+                entity.HasOne(d => d.FK_AppUser)
+                    .WithMany(p => p.Ecom_Shippings)
+                    .HasForeignKey(d => d.FK_AppUser_Id)
+                    .HasConstraintName("Ecom_Shipping$FK_Order_Id");
+
+                entity.HasOne(d => d.FK_OrderItem)
+                    .WithMany(p => p.Ecom_Shippings)
+                    .HasForeignKey(d => d.FK_OrderItem_Id)
+                    .HasConstraintName("Ecom_Shipping$FK_OrderItem_Id");
+
+                entity.HasOne(d => d.FK_Order)
+                    .WithMany(p => p.Ecom_Shippings)
+                    .HasForeignKey(d => d.FK_Order_Id)
+                    .HasConstraintName("Ecom_Shipping$FK_OrderItemId");
+
+                entity.HasOne(d => d.FK_Product)
+                    .WithMany(p => p.Ecom_Shippings)
+                    .HasForeignKey(d => d.FK_Product_Id)
+                    .HasConstraintName("Ecom_Shipping$FK_Product_Id");
+            });
+
+            modelBuilder.Entity<Ecom_ShoppingCart>(entity =>
+            {
+                entity.HasKey(e => e.ShoppingCart_ID)
+                    .HasName("Ecom_PK_ShoppingCart_ID");
+
+                entity.ToTable("Ecom_ShoppingCart");
+
+                entity.Property(e => e.MRP).HasColumnType("decimal(11, 3)");
+
+                entity.Property(e => e.Order_Date).HasPrecision(0);
+
+                entity.Property(e => e.Price).HasColumnType("decimal(11, 3)");
+
+                entity.HasOne(d => d.FK_AppUser)
+                    .WithMany(p => p.Ecom_ShoppingCarts)
+                    .HasForeignKey(d => d.FK_AppUser_Id)
+                    .HasConstraintName("Ecom_ShoppingCart$FK_AppUser_Id");
+
+                entity.HasOne(d => d.FK_Product)
+                    .WithMany(p => p.Ecom_ShoppingCarts)
+                    .HasForeignKey(d => d.FK_Product_Id)
+                    .HasConstraintName("Ecom_ShoppingCart$FK_Product_Id");
             });
 
             modelBuilder.Entity<Insurance>(entity =>

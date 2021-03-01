@@ -249,7 +249,7 @@ namespace Truck.Controllers
                 Vehicle_Company_Master company = (VehicleCompany == null) ? new Vehicle_Company_Master() : VehicleCompany;
                 model.VehicleCompany_Name = model.VehicleCompany_Name.TrimStart().TrimEnd();
                 company.VehicleCompany_Name = (string.IsNullOrEmpty(model.VehicleCompany_Name)) ? company.VehicleCompany_Name : model.VehicleCompany_Name;
-                company.VehicleCompany_ID = (model.VehicleCompany_ID == 0) ? company.VehicleCompany_ID : model.VehicleCompany_ID;
+                //company.VehicleCompany_ID = (model.VehicleCompany_ID == 0) ? company.VehicleCompany_ID : model.VehicleCompany_ID;
                 if (VehicleCompany == null)
                 {
                     _context.Vehicle_Company_Masters.Add(company);
@@ -275,7 +275,7 @@ namespace Truck.Controllers
                 Vehicle_Model_Master vehiclemodels = (Vehiclemodel == null) ? new Vehicle_Model_Master() : Vehiclemodel;
                 model.VehicleModel_Name = model.VehicleModel_Name.TrimStart().TrimEnd();
                 vehiclemodels.VehicleModel_Name = (string.IsNullOrEmpty(model.VehicleModel_Name)) ? vehiclemodels.VehicleModel_Name : model.VehicleModel_Name;
-                vehiclemodels.VehicleModel_ID = (model.VehicleModel_ID == 0) ? vehiclemodels.VehicleModel_ID : model.VehicleModel_ID;
+                //vehiclemodels.VehicleModel_ID = (model.VehicleModel_ID == 0) ? vehiclemodels.VehicleModel_ID : model.VehicleModel_ID;
                 if (Vehiclemodel == null)
                 {
                     _context.Vehicle_Model_Masters.Add(vehiclemodels);
