@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authorization;
+using Truck.Entity;
 
 namespace Truck.Controllers
 {
@@ -63,6 +64,216 @@ namespace Truck.Controllers
         }
 
 
+        [HttpPost("[action]")]
+        public async Task<ActionResult<ApiResponse<int>>> AddEcomShoppingCart(EcomShoppingCartModel form)
+        {
+            Ecom_ShoppingCart ecomaddcart = new Ecom_ShoppingCart();
+            ecomaddcart.FK_AppUser_Id = form.FK_AppUser_Id;
+            ecomaddcart.FK_Product_Id = form.FK_Product_Id;
+            ecomaddcart.MRP = _context.Products.Where(x => x.productID == form.FK_Product_Id).Select(s => s.MRP).FirstOrDefault();
+            ecomaddcart.Quantity = form.Quantity;
+            ecomaddcart.status = 1;
+            try
+            {
+                var existingprod = await _context.Ecom_ShoppingCarts.Where(x => x.FK_Product_Id == form.FK_Product_Id && x.status == 1 && x.FK_AppUser_Id == form.FK_AppUser_Id).FirstOrDefaultAsync();
+                if (existingprod != null)
+                {
+                    existingprod.Quantity = existingprod.Quantity + form.Quantity;
+                    _context.Update(existingprod);
+                    await _context.SaveChangesAsync();
+                }
+                else
+                {
+                    _context.Ecom_ShoppingCarts.Add(ecomaddcart);
+                    await _context.SaveChangesAsync();
+                }
+                return new ApiResponse<int> { code = 1, data = ecomaddcart.ShoppingCart_ID, message = "Success" };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<int> { code = 0, data = 0 };
+            }
+
+        }
+
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult<ApiResponse<int>>> UpdateEcomCart(EcomShoppingCartModel model)
+        {
+            try
+            {
+                
+                var comp = await _context.Ecom_ShoppingCarts.Where(x => x.ShoppingCart_ID == model.ShoppingCart_ID && x.FK_AppUser_Id == model.FK_AppUser_Id && x.FK_Product_Id == model.FK_Product_Id  && x.status == 1).FirstOrDefaultAsync();
+                if (comp != null)
+                {
+                    if (model.Quantity < 1)
+                    {
+                        _context.RemoveRange(comp);
+                    }
+                    else if (model.Quantity >= 1)
+                    {
+                        comp.Quantity = model.Quantity;
+                        _context.Update(comp);
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+
+                return new ApiResponse<int> { code = 1, message = "Cart Updated Successfully" };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<int>
+                {
+                    code = 1,
+                    message = ex.Message
+                };
+            }
+
+        }
+
+
+        [HttpGet("[action]")]
+        public async Task<ActionResult<IEnumerable<CartModel>>> GetEcomCartDetails()
+        {
+            return await _context.Ecom_ShoppingCarts.Where(x => x.FK_AppUser_Id == _repos.UserID  && x.status == 1).Select(x => new CartModel
+            {
+                productID = x.FK_Product_Id,
+                ShoppingCart_ID = x.ShoppingCart_ID,
+                ProductName = x.FK_Product.Product_Name,
+                Price = x.Price,
+                MRP = x.MRP,
+                Quantity = x.Quantity,
+                Order_Date = x.Order_Date,
+                PhotoPath = _context.Products.Where(y => y.productID == x.FK_Product_Id)
+                .Select(s => s.Photo_Path).FirstOrDefault(),
+                PercentDiscount = _context.Products.Where(x => x.productID == x.productID).Select(s => s.PercentDiscount).FirstOrDefault(),
+            }).ToListAsync();
+        }
+
+        [HttpDelete("[action]/{id}")]
+        public async Task<ActionResult<ApiResponse<int>>> DeleteEcomShoppingCart(int id)
+        {
+            var cartid = await _context.Ecom_ShoppingCarts.FindAsync(id);
+            if (cartid != null)
+            {
+                cartid.status = 0;
+                _context.Ecom_ShoppingCarts.Update(cartid);
+                await _context.SaveChangesAsync();
+            }
+            return new ApiResponse<int> { code = 1 };
+        }
+
+        [HttpDelete("[action]")]
+        public async Task<ActionResult<ApiResponse<int>>> DeleteAllCart(int userid)
+        {
+            
+            var cartid = _context.Ecom_ShoppingCarts.Where(x => x.FK_AppUser_Id == userid);
+            if (cartid != null)
+            {
+                _context.Ecom_ShoppingCarts.RemoveRange(_context.Ecom_ShoppingCarts.Where(x => x.FK_AppUser_Id == _repos.UserID));
+                await _context.SaveChangesAsync();
+            }
+            return new ApiResponse<int> { code = 1 };
+        }
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult<ApiResponse<int>>> AddEcomFavorate(EcomFavorteModel form)
+        {
+
+            var query = await _context.Ecom_FavoriteListUserwises.Where(w => w.FK_AppUser_Id == _repos.UserID 
+            && w.FK_Product_Id == form.FK_Product_Id).FirstOrDefaultAsync();
+            if (query != null)
+            {
+                _context.Ecom_FavoriteListUserwises.Remove(query);
+                _context.SaveChangesAsync();
+                return new ApiResponse<int> { code = 1, data = 1, message = "Removed From Favorite" };
+            }
+            else
+            {
+                Ecom_FavoriteListUserwise ecomfavor = new Ecom_FavoriteListUserwise();
+                ecomfavor.FK_AppUser_Id = _repos.UserID;
+                ecomfavor.FK_Product_Id = form.FK_Product_Id;
+                
+                try
+                {
+                    _context.Ecom_FavoriteListUserwises.Add(ecomfavor);
+                    await _context.SaveChangesAsync();
+                    return new ApiResponse<int> { code = 1, data = ecomfavor.Favorate_ID, message = "Added To Favorite" };
+                }
+                catch (Exception ex)
+                {
+                    return new ApiResponse<int> { code = 0, data = 0 };
+                }
+            }
+
+        }
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult<ApiResponse<int>>> AddorUpdateEcomShippingAddress(EcomShippingModel form)
+        {
+           
+            Ecom_Shipping ecomShipping = (form.Shipment_ID > 0) ? await _context.Ecom_Shippings.Where(x => x.Shipment_ID == form.Shipment_ID).FirstOrDefaultAsync() : new Ecom_Shipping();
+
+            ecomShipping.FK_Order_Id = form.FK_Order_Id;
+            ecomShipping.FK_AppUser_Id = form.FK_AppUser_Id;
+            ecomShipping.Shipment_Status = "";
+            ecomShipping.Created_Date = DateTime.Now;
+            ecomShipping.FullName = form.FullName;
+            ecomShipping.Shipping_Address = form.Shipping_Address;
+            ecomShipping.Email_Address = form.Email_Address;
+            ecomShipping.PhoneNos = form.PhoneNos;
+            ecomShipping.City = form.City;
+            ecomShipping.PostCode = form.PostCode;
+            try
+            {
+                if (form.Shipment_ID <= 0)
+                    _context.Ecom_Shippings.Add(ecomShipping);
+
+                await _context.SaveChangesAsync();
+                return new ApiResponse<int> { code = 1, data = ecomShipping.Shipment_ID, message = "Success" };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<int> { code = 0, data = 0 };
+            }
+
+        }
+
+
+
+        [HttpDelete("[action]/{id}")]
+        public async Task<ActionResult<ApiResponse<int>>> DeleteShippingAddress(int id)
+        {
+            var add = await _context.Ecom_Shippings.FindAsync(id);
+            if (add != null)
+            {
+                _context.Ecom_Shippings.Remove(add);
+                await _context.SaveChangesAsync();
+            }
+            return new ApiResponse<int> { code = 1 };
+        }
+
+        [HttpGet("[action]")]
+        public async Task<ActionResult<IEnumerable<EcomShippingModel>>> GetEcomShippingAddress(int userid)
+        {
+            return await _context.Ecom_Shippings.Where(x => x.FK_AppUser_Id == userid).Select(x => new EcomShippingModel
+            {
+                Shipment_ID = x.Shipment_ID,
+                FK_Order_Id = x.FK_Order_Id,
+                Shipment_Status = x.Shipment_Status,
+                FullName = x.FullName,
+                Shipping_Address = x.Shipping_Address,
+                Email_Address = x.Email_Address,
+                PhoneNos = x.PhoneNos,
+                Created_Date = x.Created_Date,
+                PostCode = x.PostCode,
+                City = x.City
+
+            }).ToListAsync();
+        }
+
+
         /* [HttpPost("[action]")]
          public async Task<ActionResult<ApiResponse<int>>> CancelOrder(CancelOrderModel form)
          {
@@ -103,173 +314,6 @@ namespace Truck.Controllers
              }).FirstOrDefaultAsync();
              return new ApiResponse<SelectInvoice> { code = 1, data = list };
          }
-
-
-
-         [HttpPost("[action]")]
-         public async Task<ActionResult<ApiResponse<int>>> AddEcomShoppingCart(EcomAddtoCart form)
-         {
-             Ecom_ShoppingCart ecomaddcart = new Ecom_ShoppingCart();
-             ecomaddcart.FK_AppUser_Id = _repos.UserID;
-             ecomaddcart.FK_Product_Id = form.productID;
-             //ecomaddcart.Price = form.Price;
-             ecomaddcart.Price = _context.Ecom_Products.Where(x => x.productID == form.productID).Select(s => s.SP).FirstOrDefault();
-             ecomaddcart.MRP = _context.Ecom_Products.Where(x => x.productID == form.productID).Select(s => s.MRP).FirstOrDefault();
-             //ecomaddcart.MRP = form.MRP;
-             ecomaddcart.Quantity = form.Quantity;
-             ecomaddcart.Fk_Brand_Id = _repos.BrandID;
-             ecomaddcart.status = 1;
-
-             try
-             {
-                 var existingprod = await _context.Ecom_ShoppingCart.Where(x => x.FK_Product_Id == form.productID && x.Fk_Brand_Id == _repos.BrandID && x.status == 1 && x.FK_AppUser_Id == _repos.UserID).FirstOrDefaultAsync();
-
-                 // var existingprod = await context.Ecom_ShoppingCart.Where(x => x.FK_Product_Id == form.productID).FirstOrDefaultAsync(); //&& x.Fk_Brand_Id == repos.BrandID);
-                 if (existingprod != null)
-                 {
-                     existingprod.Quantity = existingprod.Quantity + form.Quantity;
-                     _context.Update(existingprod);
-                     await _context.SaveChangesAsync();
-                 }
-                 else
-                 {
-                     _context.Ecom_ShoppingCart.Add(ecomaddcart);
-                     await _context.SaveChangesAsync();
-                 }
-                 return new ApiResponse<int> { code = 1, data = ecomaddcart.ShoppingCart_ID, message = "Success" };
-             }
-             catch (Exception ex)
-             {
-                 return new ApiResponse<int> { code = 0, data = 0 };
-             }
-
-         }
-
-
-         [HttpPost("[action]")]
-         public async Task<ActionResult<ApiResponse<int>>> UpdateEcomCart(EcomAddtoCart model)
-         {
-             try
-             {
-                 //&& x.Fk_Brand_Id == model._repos.BrandID
-                 var comp = await _context.Ecom_ShoppingCart.Where(x => x.ShoppingCart_ID == model.ShoppingCart_ID && x.FK_AppUser_Id == _repos.UserID && x.FK_Product_Id == model.productID && x.Fk_Brand_Id == _repos.BrandID && x.status == 1).FirstOrDefaultAsync();
-                 if (comp != null)
-                 {
-                     if (model.Quantity < 1)
-                     {
-                         _context.RemoveRange(comp);
-                     }
-                     else if (model.Quantity >= 1)
-                     {
-                         comp.Quantity = model.Quantity;
-                         _context.Update(comp);
-                     }
-                 }
-
-                 await _context.SaveChangesAsync();
-
-                 return new ApiResponse<int> { code = 1, message = "Cart Updated Successfully" };
-             }
-             catch (Exception ex)
-             {
-                 return new ApiResponse<int>
-                 {
-                     code = 1,
-                     message = ex.Message
-                 };
-             }
-
-         }
-
-
-         [HttpGet("[action]")]
-         public async Task<ActionResult<IEnumerable<EcomCart>>> GetEcomCartDetails()
-         {
-
-             return await _context.Ecom_ShoppingCart.Where(x => x.FK_AppUser_Id == _repos.UserID && x.Fk_Brand_Id == _repos.BrandID && x.status == 1).Select(x => new EcomCart
-             {
-                 productID = x.FK_Product_Id,
-                 ShoppingCart_ID = x.ShoppingCart_ID,
-                 ProductName = x.FK_Product_.name,
-                 Price = x.Price,
-                 MRP = x.MRP,
-                 Quantity = x.Quantity,
-                 Order_Date = x.Order_Date,
-                 PhotoPath = _context.Ecom_ProductPhotoPath.Where(y => y.FK_Product_Id == x.FK_Product_Id)
-                 .Select(s => s.ProductPhotoPath).FirstOrDefault(),
-                 PercentDiscount = _context.Ecom_Products.Where(x => x.productID == x.productID).Select(s => s.PercentDiscount).FirstOrDefault(),
-                 isfreedelievry = x.FK_Product_.isfreedelievry,
-                 GST = _context.GST.Where(w => w.GST_ID == x.FK_Product_.FK_GST).Select(s => s.GST_Value).FirstOrDefault(),
-                 Shipping_Charge = _context.Ecom_Products.Where(w => w.productID == x.FK_Product_Id).Select(s => s.Shipping_Charge).FirstOrDefault(),
-
-             }).ToListAsync();
-         }
-
-         [HttpDelete("[action]/{id}")]
-         public async Task<ActionResult<ApiResponse<int>>> DeleteEcomShoppingCart(int id)
-         {
-             var cartid = await _context.Ecom_ShoppingCart.FindAsync(id);
-             if (cartid != null)
-             {
-                 cartid.status = 0;
-                 _context.Ecom_ShoppingCart.Update(cartid);
-                 await _context.SaveChangesAsync();
-             }
-             return new ApiResponse<int> { code = 1 };
-         }
-
-         [HttpDelete("[action]")]
-         public async Task<ActionResult<ApiResponse<int>>> DeleteAllCart()
-         {
-             //var cartid = await _context.Ecom_ShoppingCart.Where(x=>x.FK_AppUser_Id ==_repos.UserID);
-             var cartid = _context.Ecom_ShoppingCart.Where(x => x.FK_AppUser_Id == _repos.UserID);
-             if (cartid != null)
-             {
-                 //_context.Ecom_ShoppingCart.Remove(cartid);
-                 _context.Ecom_ShoppingCart.RemoveRange(_context.Ecom_ShoppingCart.Where(x => x.FK_AppUser_Id == _repos.UserID));
-
-                 await _context.SaveChangesAsync();
-             }
-             return new ApiResponse<int> { code = 1 };
-         }
-
-
-         [HttpPost("[action]")]
-         public async Task<ActionResult<ApiResponse<int>>> AddEcomWishList(EcomWishlist form)
-         {
-             Ecom_Wishlist ecomwishlist = new Ecom_Wishlist();
-             ecomwishlist.FK_AppUser_Id = form.userID;
-             ecomwishlist.FK_Product_Id = form.productID;
-             ecomwishlist.Fk_Brand_Id = form.brandId;
-             try
-             {
-                 var userid = await _context.Ecom_Wishlist.FindAsync(form.userID);
-                 if (userid != null)
-                 {
-                     _context.Ecom_Wishlist.Add(ecomwishlist);
-                     await _context.SaveChangesAsync();
-                 }
-                 return new ApiResponse<int> { code = 1, data = ecomwishlist.Wishlist_ID, message = "" };
-             }
-             catch (Exception ex)
-             {
-                 return new ApiResponse<int> { code = 0, data = 0 };
-             }
-
-         }
-
-         [HttpDelete("[action]/{id}")]
-         public async Task<ActionResult<ApiResponse<int>>> DeleteEcomWishList(int id)
-         {
-             var cartid = await _context.Ecom_Wishlist.FindAsync(id);
-             if (cartid != null)
-             {
-                 _context.Ecom_Wishlist.Remove(cartid);
-                 await _context.SaveChangesAsync();
-             }
-             return new ApiResponse<int> { code = 1 };
-         }
-
 
          [HttpPost("[action]")]
          public async Task<ActionResult<ApiResponse<EcomOrders>>> EcomOrders(EcomOrderItemsViewModel model)
@@ -425,151 +469,10 @@ namespace Truck.Controllers
              }).ToListAsync();
          }
 
-         [HttpGet("[action]/id")]
-         public async Task<ActionResult<EcomOrdersList>> EcomOrderyId(int id)
-         {
-             return await _context.Ecom_Orders.Where(x => x.FK_AppUser_Id == _repos.UserID && x.Order_ID == id).Select(x => new EcomOrdersList
-             {
-                 Order_ID = x.Order_ID,
-                 Order_Status = x.OrderStatusNavigation.OrderStatus,
-                 Order_SubTotal = x.Order_SubTotal,
-                 Product_Discount = x.Product_Discount,
-                 Order_Tax = x.Order_Tax,
-                 Order_Shipping = x.Order_Shipping,
-                 Order_Total = x.Order_Total,
-                 Order_Promo = x.Order_Promo,
-                 Order_Discount = x.Order_Discount,
-                 Order_GrandTotal = x.Order_GrandTotal,
-                 Order_Date = x.Order_Date,
-                 FK_Razor_Order_Ids = x.FK_Razor_Order_Ids,
-                 Payment_Status = x.Payment_Status,
-                 Payment_Details = x.Payment_Details,
-                 ShippingAddress = _context.Ecom_Shipping.Where(a => a.FK_AppUser_Id == _repos.UserID && a.Shipment_ID == x.Fk_Shipping_id).Select(s => new EcomAddressDetails
-                 {
-                     FullName = s.FullName,
-                     ShipingStatus = s.Shipment_Status,
-                     ShippingAddress = s.Shipping_Address,
-                     Email = s.Email_Address,
-                     PhoneNo = s.PhoneNos,
-                     City = s.City,
-                     PostCode = s.PostCode,
-                     Shipment_ID = s.Shipment_ID,
-                 }).FirstOrDefault(),
-                 ecomitemDetails = _context.Ecom_OrderItems.Where(y => y.FK_Order_Id == x.Order_ID).Select(s => new EcomOrdersItems
-                 {
-                     FK_Product_Id = s.FK_Product_Id,
-                     Order_Price = s.Order_Price,
-                     Product_Discount = s.Product_Discount,
-                     Order_Quantity = s.Order_Quantity,
-                     Order_Tax = s.Order_Tax,
-                     Order_Date = s.Order_Date,
-                     PhotoPath = _context.Ecom_ProductPhotoPath.Where(w => w.FK_Product_Id == s.FK_Product_Id).Select(s => s.ProductPhotoPath).FirstOrDefault(),
-                     ProductName = _context.Ecom_Products.Where(w => w.productID == s.FK_Product_Id).Select(s => s.name).FirstOrDefault(),
-                     PercentDiscount = _context.Ecom_Products.Where(w => w.productID == s.FK_Product_Id).Select(s => s.PercentDiscount).FirstOrDefault(),
-                     isfreedelievry = _context.Ecom_Products.Where(w => w.productID == s.FK_Product_Id).Select(s => s.isfreedelievry).FirstOrDefault(),
-                     Shipping_Charge = _context.Ecom_Products.Where(w => w.productID == s.FK_Product_Id).Select(s => s.Shipping_Charge).FirstOrDefault()
-
-                 }).ToList()
+       
 
 
-             }).FirstOrDefaultAsync();
-         }
-
-
-         [HttpPost("[action]")]
-         public async Task<ActionResult<ApiResponse<int>>> AddorUpdateEcomShippingAddress([FromForm] EcomShipping form)
-         {
-             //Ecom_Shipping ecomShipping = new Ecom_Shipping();
-             Ecom_Shipping ecomShipping = (form.Shipment_ID > 0) ? await _context.Ecom_Shipping.Where(x => x.Shipment_ID == form.Shipment_ID).FirstOrDefaultAsync() : new Ecom_Shipping();
-
-             ecomShipping.FK_Order_Id = form.FK_Order_Id;
-             ecomShipping.FK_AppUser_Id = _repos.UserID;
-             ecomShipping.Shipment_Status = "";
-             ecomShipping.Created_Date = DateTime.Now;
-             ecomShipping.FullName = form.FullName;
-             ecomShipping.Shipping_Address = form.Shipping_Address;
-             ecomShipping.Email_Address = form.Email_Address;
-             ecomShipping.PhoneNos = form.PhoneNos;
-             ecomShipping.City = form.City;
-             ecomShipping.PostCode = form.PostCode;
-             try
-             {
-                 if (form.Shipment_ID <= 0)
-                     _context.Ecom_Shipping.Add(ecomShipping);
-
-                 await _context.SaveChangesAsync();
-                 return new ApiResponse<int> { code = 1, data = ecomShipping.Shipment_ID, message = "Success" };
-             }
-             catch (Exception ex)
-             {
-                 return new ApiResponse<int> { code = 0, data = 0 };
-             }
-
-         }
-
-         [HttpPost("[action]")]
-         public async Task<ActionResult<ApiResponse<int>>> AddEcomFavorate([FromForm] EcomFavorte form)
-         {
-
-             var query = await _context.Ecom_FavoriteListUserwise.Where(w => w.FK_AppUser_Id == _repos.UserID &&
-             w.Fk_Brand_Id == _repos.BrandID
-             && w.FK_Product_Id == form.FK_Product_Id).FirstOrDefaultAsync();
-             if (query != null)
-             {
-                 _context.Ecom_FavoriteListUserwise.Remove(query);
-                 _context.SaveChangesAsync();
-                 return new ApiResponse<int> { code = 1, data = 1, message = "Removed From Favorite" };
-             }
-             else
-             {
-                 Ecom_FavoriteListUserwise ecomfavor = new Ecom_FavoriteListUserwise();
-                 ecomfavor.FK_AppUser_Id = _repos.UserID;
-                 ecomfavor.FK_Product_Id = form.FK_Product_Id;
-                 ecomfavor.Fk_Brand_Id = _repos.BrandID;
-                 try
-                 {
-                     _context.Ecom_FavoriteListUserwise.Add(ecomfavor);
-                     await _context.SaveChangesAsync();
-                     return new ApiResponse<int> { code = 1, data = ecomfavor.Favorate_ID, message = "Added To Favorite" };
-                 }
-                 catch (Exception ex)
-                 {
-                     return new ApiResponse<int> { code = 0, data = 0 };
-                 }
-             }
-
-         }
-
-         [HttpDelete("[action]/{id}")]
-         public async Task<ActionResult<ApiResponse<int>>> DeleteShippingAddress(int id)
-         {
-             var add = await _context.Ecom_Shipping.FindAsync(id);
-             if (add != null)
-             {
-                 _context.Ecom_Shipping.Remove(add);
-                 await _context.SaveChangesAsync();
-             }
-             return new ApiResponse<int> { code = 1 };
-         }
-
-         [HttpGet("[action]")]
-         public async Task<ActionResult<IEnumerable<EcomShipping>>> GetEcomShippingAddress()
-         {
-             return await _context.Ecom_Shipping.Where(x => x.FK_AppUser_Id == _repos.UserID).Select(x => new EcomShipping
-             {
-                 Shipment_ID = x.Shipment_ID,
-                 FK_Order_Id = x.FK_Order_Id,
-                 Shipment_Status = x.Shipment_Status,
-                 FullName = x.FullName,
-                 Shipping_Address = x.Shipping_Address,
-                 Email_Address = x.Email_Address,
-                 PhoneNos = x.PhoneNos,
-                 Created_Date = x.Created_Date,
-                 PostCode = x.PostCode,
-                 City = x.City
-
-             }).ToListAsync();
-         }
+        
 
 
          [HttpPost("[action]")]

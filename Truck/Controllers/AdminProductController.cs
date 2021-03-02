@@ -14,10 +14,11 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Truck.Entity;
 
 namespace Truck.Controllers
 {
-    [Authorize]
+
     [Route("api/[controller]")]
     [ApiExplorerSettings(GroupName = "v1")]
     [ApiController]

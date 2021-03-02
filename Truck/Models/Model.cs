@@ -184,6 +184,72 @@ namespace Truck.Models
 
        
     }
+    public class CartModel
+    {
+        public int userID { get; set; }
+        public int? productID { get; set; }
+
+        public int ShoppingCart_ID { get; set; }
+        public int? FK_AppUser_Id { get; set; }
+        public DateTime Order_Date { get; set; }
+        public int? FK_Product_Id { get; set; }
+
+        public string ProductName { get; set; }
+
+        public decimal? Price { get; set; }
+        public decimal? MRP { get; set; }
+        public int? Quantity { get; set; }
+
+        public string PhotoPath { get; set; }
+
+        public int? isfreedelievry { get; set; }
+        public int? PercentDiscount { get; set; }
+
+        public string GST { get; set; }
+        public int? Shipping_Charge { get; set; }
+
+    }
+    public class EcomShippingModel
+    {
+        public int? FK_Order_Id { get; set; }
+        public int Shipment_ID { get; set; }
+        public int? FK_OrderItem_Id { get; set; }
+        public int? FK_Product_Id { get; set; }
+        public int? FK_AppUser_Id { get; set; }
+        public string Shipment_Status { get; set; }
+        public DateTime Created_Date { get; set; }
+        public string FullName { get; set; }
+        public string Shipping_Address { get; set; }
+        public string Email_Address { get; set; }
+        public string PhoneNos { get; set; }
+
+        public string City { get; set; }
+
+        public string PostCode { get; set; }
+
+    }
+
+    public class EcomFavorteModel
+    {
+        public int Favorate_ID { get; set; }
+        public int? FK_AppUser_Id { get; set; }
+        public int? FK_Product_Id { get; set; }
+        public int? Fk_Brand_Id { get; set; }
+
+    }
+    public  class EcomShoppingCartModel
+    {
+        public int ShoppingCart_ID { get; set; }
+        public int? FK_AppUser_Id { get; set; }
+        public DateTime Order_Date { get; set; }
+        public int? FK_Product_Id { get; set; }
+        public decimal? Price { get; set; }
+        public int? Quantity { get; set; }
+        public int? status { get; set; }
+        public decimal? MRP { get; set; }
+
+       
+    }
 
     public class VehicleModel
     {

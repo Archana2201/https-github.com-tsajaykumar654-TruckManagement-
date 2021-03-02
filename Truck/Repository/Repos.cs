@@ -29,8 +29,8 @@ namespace Truck.Repository
         }
 
         public string mobile => ((ClaimsIdentity)_httpContext.HttpContext.User.Identity).FindFirst("mobile").Value;
-        
-
+       
+        public int UserID => int.Parse(((ClaimsIdentity)_httpContext.HttpContext.User.Identity).FindFirst("UserID").Value);
         public string Encrypt(string stringToEncrypt)
         {
             return stringToEncrypt;

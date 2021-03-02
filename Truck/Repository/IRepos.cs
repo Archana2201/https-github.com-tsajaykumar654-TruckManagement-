@@ -7,8 +7,8 @@ namespace Truck.Repository
 {
     public interface IRepos
     {
-        //    int UserID { get; }
-        //    int BrandID { get; }
+        int UserID { get; }
+       
 
         string mobile { get; }
         string Encrypt(string stringToEncrypt);

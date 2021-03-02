@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -22,6 +23,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Serialization;
 using Swashbuckle.AspNetCore.SwaggerUI;
+using Truck.Entity;
+using Truck.Repository;
 
 namespace Truck
 {
@@ -117,10 +120,10 @@ namespace Truck
                     .WithOrigins("http://localhost:4200", "https://truck.com", "https://www.truck.com", "http://www.truck.com", "http://truck.com")
                     .AllowCredentials();
             }));
-            //services.AddDbContext<carddbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-            //services.AddSingleton<IRepos, Repos>();
-            //services.AddSingleton<INotifier, Notifer>();
-            //services.AddSingleton<IStorage, Storage>();
+            services.AddDbContext<TruckContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddSingleton<IRepos, Repos>();
+            services.AddSingleton<iNotifier, Notifier>();
+            services.AddSingleton<IStorage, Storage>();
 
             services.AddSwaggerGen(c =>
             {
