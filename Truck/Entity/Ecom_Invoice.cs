@@ -7,6 +7,11 @@ namespace Truck.Entity
 {
     public partial class Ecom_Invoice
     {
+        public Ecom_Invoice()
+        {
+            Ecom_Payments = new HashSet<Ecom_Payment>();
+        }
+
         public int Invoice_Id { get; set; }
         public int? FK_AppUser_Id { get; set; }
         public int? FK_Shipment_Id { get; set; }
@@ -17,5 +22,6 @@ namespace Truck.Entity
 
         public virtual AppUser FK_AppUser { get; set; }
         public virtual Ecom_Order FK_Order { get; set; }
+        public virtual ICollection<Ecom_Payment> Ecom_Payments { get; set; }
     }
 }

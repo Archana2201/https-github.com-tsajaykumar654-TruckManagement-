@@ -14,6 +14,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authorization;
 using Truck.Entity;
+using Razorpay.Api;
 
 namespace Truck.Controllers
 {
@@ -274,251 +275,238 @@ namespace Truck.Controllers
         }
 
 
-        /* [HttpPost("[action]")]
-         public async Task<ActionResult<ApiResponse<int>>> CancelOrder(CancelOrderModel form)
-         {
-             try
-             {
-                 var cancel = await _context.Ecom_Orders.Where(x => x.Order_ID == form.Order_ID).FirstOrDefaultAsync();
 
-                 if (cancel != null)
-                 {
-                     cancel.OrderStatus = 6;
-                     cancel.CancelReason = form.Reason;
-                     _context.Update(cancel);
-                     await _context.SaveChangesAsync();
-                 }
-                 else
-                 {
-                     _context.Ecom_Orders.Add(cancel);
-                     await _context.SaveChangesAsync();
-                 }
-                 return new ApiResponse<int> { code = 1, data = cancel.Order_ID, message = "Success" };
-             }
-             catch (Exception ex)
-             {
-                 return new ApiResponse<int> { code = 0, data = 0 };
-             }
+        [HttpPost("[action]")]
+        public async Task<ActionResult<ApiResponse<EcomOrdersModel>>> EcomOrders(EcomOrderItemsViewModel model)
+        {
+            Ecom_Order orders = new Ecom_Order();
+            try
+            {
+                decimal? totalAmount = 0;
+                decimal? grandTotal = 0;
+                decimal? gst = 0;
+                decimal? shippingPrice = 0;
+                decimal? discount = 0;
 
 
 
-         }
+                foreach (var models in model.ecomitemDetails)
+                {
+                    var ecom_Products = _context.Products.Where(x => x.productID == models.FK_Product_Id).FirstOrDefault();
+                    totalAmount += ecom_Products.SP * models.Order_Quantity;
+                    grandTotal += ecom_Products.MRP * models.Order_Quantity;
+                    gst += (ecom_Products.SP - ((ecom_Products.SP * 100) / (100 + ecom_Products.FK_GST))) * models.Order_Quantity;
+                    shippingPrice += ecom_Products.Shipping_Charge;
+                }
 
-         [HttpGet("[action]/id")]
-         public async Task<ActionResult<ApiResponse<SelectInvoice>>> EcomProductInvoice(int id)
-         {
-             //&& y.FK_Order_Id == id
-             var list = await _context.Ecom_Invoice.Where(y => y.FK_AppUser_Id == _repos.UserID).Select(x => new SelectInvoice
-             {
-                 path = x.Invoice_Path
-             }).FirstOrDefaultAsync();
-             return new ApiResponse<SelectInvoice> { code = 1, data = list };
-         }
+                orders.FK_AppUser_Id = _repos.UserID;
+                orders.Order_SubTotal = model.ecomorder.Order_SubTotal;
+                orders.Order_Tax = gst;
+                orders.Order_Shipping = shippingPrice;
+                orders.Order_Total = totalAmount;
+                orders.Order_Promo = model.ecomorder.Order_Promo;
+                orders.Order_Discount = (grandTotal - totalAmount);
+                orders.Order_GrandTotal = grandTotal;
+                orders.Fk_Shipping_id = model.ecomorder.Fk_Shipping_id;
+                orders.Order_Date = DateTime.Now;
+                orders.OrderStatus = 7;
+                orders.isCashOnDelivery = false;
 
-         [HttpPost("[action]")]
-         public async Task<ActionResult<ApiResponse<EcomOrders>>> EcomOrders(EcomOrderItemsViewModel model)
-         {
-             Ecom_Orders orders = new Ecom_Orders();
-             try
-             {
-                 decimal? totalAmount = 0;
-                 decimal? grandTotal = 0;
-                 decimal? gst = 0;
-                 decimal? shippingPrice = 0;
-                 decimal? discount = 0;
+                RazorpayClient client = new RazorpayClient("rzp_test_Uf4CUBEQ370rpF", "JMZS0T1THnHYXCJ8dqD3bYbC");
 
-                 int? freeDeliveryShipppingCharge = _context.Ecom_Brand_Appsettings
-                 .Where(x => x.BrandID == _repos.BrandID).Select(s => s.Shipping_Charge).FirstOrDefault();
+                decimal? amount = model.ecomorder.Order_GrandTotal;
 
-                 foreach (var models in model.ecomitemDetails)
-                 {
-                     var ecom_Products = _context.Ecom_Products.Where(x => x.productID == models.FK_Product_Id).FirstOrDefault();
-                     totalAmount += ecom_Products.SP * models.Order_Quantity;
-                     grandTotal += ecom_Products.MRP * models.Order_Quantity;
-                     gst += (ecom_Products.SP - ((ecom_Products.SP * 100) / (100 + ecom_Products.FK_GST))) * models.Order_Quantity;
-                     shippingPrice += ecom_Products.isfreedelievry == 0 ? ecom_Products.Shipping_Charge : 0;
-                 }
-                 if (freeDeliveryShipppingCharge != 0)
-                 {
-                     shippingPrice = freeDeliveryShipppingCharge <= totalAmount ? 0 : shippingPrice;
-                 }
-                 orders.FK_AppUser_Id = _repos.UserID;
-                 orders.Order_Status = model.ecomorder.Order_Status;
-                 orders.Order_SubTotal = model.ecomorder.Order_SubTotal;
-                 orders.Order_Tax = gst;
-                 orders.Order_Shipping = shippingPrice;
-                 orders.Order_Total = totalAmount;
-                 orders.Order_Promo = model.ecomorder.Order_Promo;
-                 orders.Order_Discount = (grandTotal - totalAmount);
-                 orders.Order_GrandTotal = grandTotal;
-                 orders.Fk_Shipping_id = model.ecomorder.Fk_Shipping_id;
-                 orders.Order_Date = DateTime.Now;
-                 orders.FK_Brandid = _repos.BrandID;
-                 orders.Order_Status = "ORDERED";
-                 orders.OrderStatus = 7;
-                 orders.isCashOnDelivery = false;
+                var options = new Dictionary<string, object>
+                {
+                { "amount", amount * 100 },
+                { "currency", "INR" },
+                { "receipt", "Receipt" },
+                // auto capture payments rather than manual capture
+                // razor pay recommended option
+                { "payment_capture", true }
+                };
 
-                 RazorpayClient client = new RazorpayClient("rzp_test_Uf4CUBEQ370rpF", "JMZS0T1THnHYXCJ8dqD3bYbC");
+                var order = client.Order.Create(options);
+                var orderId = order["id"].ToString();
+                var orderJson = order.Attributes.ToString();
 
-                 decimal? amount = model.ecomorder.Order_GrandTotal;
+                orders.FK_Razor_Order_Id = orderId;
+                orders.Payment_Details = model.ecomorder.Payment_Details;
+                orders.Payment_Status = model.ecomorder.Payment_Status;
 
-                 var options = new Dictionary<string, object>
-                 {
-                 { "amount", amount * 100 },
-                 { "currency", "INR" },
-                 { "receipt", "Receipt" },
-                 // auto capture payments rather than manual capture
-                 // razor pay recommended option
-                 { "payment_capture", true }
-                 };
-
-                 var order = client.Order.Create(options);
-                 var orderId = order["id"].ToString();
-                 var orderJson = order.Attributes.ToString();
-
-                 orders.FK_Razor_Order_Ids = orderId;
-                 orders.Payment_Details = model.ecomorder.Payment_Details;
-                 orders.Payment_Status = model.ecomorder.Payment_Status;
-
-                 await _context.Ecom_Orders.AddAsync(orders);
-                 await _context.SaveChangesAsync();
-                 var ParentOrderId = await _context.Ecom_Orders.FindAsync(orders.Order_ID);
+                await _context.Ecom_Orders.AddAsync(orders);
+                await _context.SaveChangesAsync();
+                var ParentOrderId = await _context.Ecom_Orders.FindAsync(orders.Order_ID);
 
 
-                 foreach (var models in model.ecomitemDetails)
-                 {
-                     var ecom_Products = _context.Ecom_Products.Where(x => x.productID == models.FK_Product_Id).FirstOrDefault();
-                     Ecom_OrderItems ordersitems = new Ecom_OrderItems();
-                     ordersitems.FK_Product_Id = models.FK_Product_Id;
-                     ordersitems.FK_Order_Id = ParentOrderId.Order_ID;
-                     ordersitems.Order_Price = ecom_Products.SP;
-                     ordersitems.Product_Discount = (ecom_Products.MRP - ecom_Products.SP);
-                     ordersitems.Order_Quantity = models.Order_Quantity;
-                     ordersitems.Order_Tax = (ecom_Products.SP - ((ecom_Products.SP * 100) / (100 + ecom_Products.FK_GST)));
-                     ordersitems.Order_Date = models.Order_Date = DateTime.Now;
-                     await _context.Ecom_OrderItems.AddAsync(ordersitems);
-                 }
-                 await _context.SaveChangesAsync();
+                foreach (var models in model.ecomitemDetails)
+                {
+                    var ecom_Products = _context.Products.Where(x => x.productID == models.FK_Product_Id).FirstOrDefault();
+                    Ecom_OrderItem ordersitems = new Ecom_OrderItem();
+                    ordersitems.FK_Product_Id = models.FK_Product_Id;
+                    ordersitems.FK_Order_Id = ParentOrderId.Order_ID;
+                    ordersitems.Order_Price = ecom_Products.SP;
+                    ordersitems.Product_Discount = (ecom_Products.MRP - ecom_Products.SP);
+                    ordersitems.Order_Quantity = models.Order_Quantity;
+                    ordersitems.Order_Tax = (ecom_Products.SP - ((ecom_Products.SP * 100) / (100 + ecom_Products.FK_GST)));
+                    ordersitems.Order_Date = models.Order_Date = DateTime.Now;
+                    await _context.Ecom_OrderItems.AddAsync(ordersitems);
+                }
+                await _context.SaveChangesAsync();
 
-                 EcomOrders query = new EcomOrders();
-                 query.Order_ID = orders.Order_ID;
-                 query.Fk_Razor_OrderIds = orderId;
-                 query.FK_AppUser_Id = _repos.UserID;
-                 query.Order_Shipping = orders.Order_Shipping;
-                 query.Order_Status = orders.Order_Status;
-                 query.Order_SubTotal = orders.Order_SubTotal;
-                 query.Order_Total = orders.Order_Total;
-                 query.Order_Tax = orders.Order_Tax;
-                 query.Payment_Details = orders.Payment_Details;
-                 query.Payment_Status = orders.Payment_Status;
-                 query.Fk_Shipping_id = orders.Fk_Shipping_id;
-                 query.Order_Promo = orders.Order_Promo;
-                 query.Order_Discount = orders.Order_Discount;
-                 orders.Order_GrandTotal = orders.Order_GrandTotal;
-                 orders.FK_RazorId = orders.FK_RazorId;
-                 return new ApiResponse<EcomOrders> { code = 1, data = query, message = "Success" };
-             }
-             catch (Exception ex)
-             {
-                 return new ApiResponse<EcomOrders> { code = 1, message = ex.Message };
-             }
-         }
+                EcomOrdersModel query = new EcomOrdersModel();
+                query.Order_ID = orders.Order_ID;
+                query.Fk_Razor_OrderIds = orderId;
+                query.FK_AppUser_Id = _repos.UserID;
+                query.Order_Shipping = orders.Order_Shipping;
+                query.Order_SubTotal = orders.Order_SubTotal;
+                query.Order_Total = orders.Order_Total;
+                query.Order_Tax = orders.Order_Tax;
+                query.Payment_Details = orders.Payment_Details;
+                query.Payment_Status = orders.Payment_Status;
+                query.Fk_Shipping_id = orders.Fk_Shipping_id;
+                query.Order_Promo = orders.Order_Promo;
+                query.Order_Discount = orders.Order_Discount;
+                orders.Order_GrandTotal = orders.Order_GrandTotal;
+                orders.FK_Razor_Order_Id = orders.FK_Razor_Order_Id;
+                return new ApiResponse<EcomOrdersModel> { code = 1, data = query, message = "Success" };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<EcomOrdersModel> { code = 1, message = ex.Message };
+            }
+        }
 
+        [HttpGet("[action]")]
+        public async Task<ActionResult<IEnumerable<EcomOrdersListModel>>> EcomOrderList()
+        {
+            return await _context.Ecom_Orders.Where(x => x.FK_AppUser_Id == _repos.UserID).Select(x => new EcomOrdersListModel
+            {
+                Order_ID = x.Order_ID,
+                Order_Status = x.OrderStatusNavigation.OrderStatus,
+                Order_SubTotal = x.Order_SubTotal,
+                Order_Tax = x.Order_Tax,
+                Order_Shipping = x.Order_Shipping,
+                Order_Total = x.Order_Total,
+                Order_Promo = x.Order_Promo,
+                Order_Discount = x.Order_Discount,
+                Order_GrandTotal = x.Order_GrandTotal,
+                Order_Date = x.Order_Date,
+                FK_Razor_Order_Ids = x.FK_Razor_Order_Id,
+                Payment_Status = x.Payment_Status,
+                Payment_Details = x.Payment_Details,
+                ShippingAddress = _context.Ecom_Shippings.Where(a => a.FK_AppUser_Id == _repos.UserID && a.Shipment_ID == x.Fk_Shipping_id).Select(s => new EcomAddressDetailsModel
+                {
+                    FullName = s.FullName,
+                    ShipingStatus = s.Shipment_Status,
+                    ShippingAddress = s.Shipping_Address,
+                    Email = s.Email_Address,
+                    PhoneNo = s.PhoneNos,
+                    City = s.City,
+                    PostCode = s.PostCode,
+                    Shipment_ID = s.Shipment_ID,
+                }).FirstOrDefault(),
+                ecomitemDetails = _context.Ecom_OrderItems.Where(y => y.FK_Order_Id == x.Order_ID).Select(s => new EcomOrdersItemsModel
+                {
+                    FK_Product_Id = s.FK_Product_Id,
+                    Order_Price = s.Order_Price,
+                    Product_Discount = s.Product_Discount,
+                    Order_Quantity = s.Order_Quantity,
+                    Order_Tax = s.Order_Tax,
+                    Order_Date = s.Order_Date,
+                    PhotoPath = _context.Products.Where(w => w.productID == s.FK_Product_Id).Select(s => s.Photo_Path).FirstOrDefault(),
+                    ProductName = _context.Products.Where(w => w.productID == s.FK_Product_Id).Select(s => s.Product_Name).FirstOrDefault()
+                }).ToList()
+            }).ToListAsync();
+        }
 
-         [HttpGet("[action]")]
-         public async Task<ActionResult<IEnumerable<EcomOrdersList>>> EcomOrderList()
-         {
-             return await _context.Ecom_Orders.Where(x => x.FK_AppUser_Id == _repos.UserID).Select(x => new EcomOrdersList
-             {
-                 Order_ID = x.Order_ID,
-                 Order_Status = x.OrderStatusNavigation.OrderStatus,
-                 Order_SubTotal = x.Order_SubTotal,
-                 Product_Discount = x.Product_Discount,
-                 Order_Tax = x.Order_Tax,
-                 Order_Shipping = x.Order_Shipping,
-                 Order_Total = x.Order_Total,
-                 Order_Promo = x.Order_Promo,
-                 Order_Discount = x.Order_Discount,
-                 Order_GrandTotal = x.Order_GrandTotal,
-                 Order_Date = x.Order_Date,
-                 FK_Razor_Order_Ids = x.FK_Razor_Order_Ids,
-                 Payment_Status = x.Payment_Status,
-                 Payment_Details = x.Payment_Details,
-                 ShippingAddress = _context.Ecom_Shipping.Where(a => a.FK_AppUser_Id == _repos.UserID && a.Shipment_ID == x.Fk_Shipping_id).Select(s => new EcomAddressDetails
-                 {
-                     FullName = s.FullName,
-                     ShipingStatus = s.Shipment_Status,
-                     ShippingAddress = s.Shipping_Address,
-                     Email = s.Email_Address,
-                     PhoneNo = s.PhoneNos,
-                     City = s.City,
-                     PostCode = s.PostCode,
-                     Shipment_ID = s.Shipment_ID,
-                 }).FirstOrDefault(),
-                 ecomitemDetails = _context.Ecom_OrderItems.Where(y => y.FK_Order_Id == x.Order_ID).Select(s => new EcomOrdersItems
-                 {
-                     FK_Product_Id = s.FK_Product_Id,
-                     Order_Price = s.Order_Price,
-                     Product_Discount = s.Product_Discount,
-                     Order_Quantity = s.Order_Quantity,
-                     Order_Tax = s.Order_Tax,
-                     Order_Date = s.Order_Date,
-                     PhotoPath = _context.Ecom_ProductPhotoPath.Where(w => w.FK_Product_Id == s.FK_Product_Id).Select(s => s.ProductPhotoPath).FirstOrDefault(),
-                     ProductName = _context.Ecom_Products.Where(w => w.productID == s.FK_Product_Id).Select(s => s.name).FirstOrDefault()
-                 }).ToList()
-             }).ToListAsync();
-         }
+        [HttpPost("[action]")]
+        public async Task<ActionResult<ApiResponse<int>>> CancelOrder(CancelOrderModel form)
+        {
+            try
+            {
+                var cancel = await _context.Ecom_Orders.Where(x => x.Order_ID == form.Order_ID).FirstOrDefaultAsync();
 
-       
-
-
-        
-
-
-         [HttpPost("[action]")]
-         public async Task<ActionResult<ApiResponse<int>>> AddEcomPayment(EcomPayment form)
-         {
-             Ecom_Payment ecomPayment = new Ecom_Payment();
-             ecomPayment.FK_Invoice_Id = form.FK_Invoice_Id;
-             ecomPayment.FK_AppUser_Id = form.FK_AppUser_Id;
-             ecomPayment.Payment_Method = form.Payment_Method;
-             ecomPayment.Payment_Date = DateTime.Now;
-
-             try
-             {
-                 _context.Ecom_Payment.Add(ecomPayment);
-                 await _context.SaveChangesAsync();
-                 return new ApiResponse<int> { code = 1, data = ecomPayment.Payment_ID, message = "" };
-             }
-             catch (Exception ex)
-             {
-                 return new ApiResponse<int> { code = 0, data = 0 };
-             }
-
-         }
+                if (cancel != null)
+                {
+                    cancel.OrderStatus = 6;
+                    cancel.CancelReason = form.Reason;
+                    _context.Update(cancel);
+                    await _context.SaveChangesAsync();
+                }
+                else
+                {
+                    _context.Ecom_Orders.Add(cancel);
+                    await _context.SaveChangesAsync();
+                }
+                return new ApiResponse<int> { code = 1, data = cancel.Order_ID, message = "Success" };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<int> { code = 0, data = 0 };
+            }
 
 
-         [HttpPost("[action]")]
-         public async Task<ActionResult<ApiResponse<int>>> AddEcomInvoice(EcomInvoice form)
-         {
-             Ecom_Invoice ecomInvoice = new Ecom_Invoice();
-             ecomInvoice.FK_AppUser_Id = form.FK_AppUser_Id;
-             ecomInvoice.FK_Shipment_Id = form.FK_Shipment_Id;
-             ecomInvoice.FK_Order_Id = form.FK_Order_Id;
-             ecomInvoice.Invoice_Date = DateTime.Now;
 
-             try
-             {
-                 _context.Ecom_Invoice.Add(ecomInvoice);
-                 await _context.SaveChangesAsync();
-                 return new ApiResponse<int> { code = 1, data = ecomInvoice.Invoice_Id, message = "Success" };
-             }
-             catch (Exception ex)
-             {
-                 return new ApiResponse<int> { code = 0, data = 0, message = "Error" };
-             }
+        }
 
-         }
-         */
+        [HttpPost("[action]")]
+        public async Task<ActionResult<ApiResponse<int>>> AddEcomInvoice(EcomInvoiceModel form)
+        {
+            Ecom_Invoice ecomInvoice = new Ecom_Invoice();
+            ecomInvoice.FK_AppUser_Id = form.FK_AppUser_Id;
+            ecomInvoice.FK_Shipment_Id = form.FK_Shipment_Id;
+            ecomInvoice.FK_Order_Id = form.FK_Order_Id;
+            ecomInvoice.Invoice_Date = DateTime.Now;
+
+            try
+            {
+                _context.Ecom_Invoices.Add(ecomInvoice);
+                await _context.SaveChangesAsync();
+                return new ApiResponse<int> { code = 1, data = ecomInvoice.Invoice_Id, message = "Success" };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<int> { code = 0, data = 0, message = "Error" };
+            }
+
+        }
+
+        [HttpGet("[action]/id")]
+        public async Task<ActionResult<ApiResponse<SelectInvoice>>> EcomProductInvoice(int id)
+        {
+           
+            var list = await _context.Ecom_Invoices.Where(y => y.FK_AppUser_Id == _repos.UserID).Select(x => new SelectInvoice
+            {
+                path = x.Invoice_Path
+            }).FirstOrDefaultAsync();
+            return new ApiResponse<SelectInvoice> { code = 1, data = list };
+        }
+
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult<ApiResponse<int>>> AddEcomPayment(EcomPaymentModel form)
+        {
+            Ecom_Payment ecomPayment = new Ecom_Payment();
+            ecomPayment.FK_Invoice_Id = form.FK_Invoice_Id;
+            ecomPayment.FK_AppUser_Id = form.FK_AppUser_Id;
+            ecomPayment.Payment_Method = form.Payment_Method;
+            ecomPayment.Payment_Date = DateTime.Now;
+
+            try
+            {
+                _context.Ecom_Payments.Add(ecomPayment);
+                await _context.SaveChangesAsync();
+                return new ApiResponse<int> { code = 1, data = ecomPayment.Payment_ID, message = "" };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<int> { code = 0, data = 0 };
+            }
+
+        }
+
+
+
     }
 }

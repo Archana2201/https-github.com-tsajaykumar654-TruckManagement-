@@ -31,8 +31,10 @@ namespace Truck.Entity
         public virtual DbSet<Ecom_Order> Ecom_Orders { get; set; }
         public virtual DbSet<Ecom_OrderItem> Ecom_OrderItems { get; set; }
         public virtual DbSet<Ecom_Order_ShipmentDetail> Ecom_Order_ShipmentDetails { get; set; }
+        public virtual DbSet<Ecom_Payment> Ecom_Payments { get; set; }
         public virtual DbSet<Ecom_Shipping> Ecom_Shippings { get; set; }
         public virtual DbSet<Ecom_ShoppingCart> Ecom_ShoppingCarts { get; set; }
+        public virtual DbSet<GST> GSTs { get; set; }
         public virtual DbSet<Insurance> Insurances { get; set; }
         public virtual DbSet<KYC> KYCs { get; set; }
         public virtual DbSet<Language> Languages { get; set; }
@@ -57,8 +59,7 @@ namespace Truck.Entity
         public virtual DbSet<Vehicle_Renewal_Master> Vehicle_Renewal_Masters { get; set; }
         public virtual DbSet<Wallet> Wallets { get; set; }
 
-       
-
+      
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasAnnotation("Relational:Collation", "SQL_Latin1_General_CP1_CI_AS");
@@ -316,17 +317,31 @@ namespace Truck.Entity
                     .HasMaxLength(500)
                     .IsUnicode(false);
 
+                entity.Property(e => e.FK_Razor_Order_Id)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
                 entity.Property(e => e.Order_Date).HasColumnType("datetime");
 
                 entity.Property(e => e.Order_Discount).HasColumnType("decimal(11, 3)");
 
                 entity.Property(e => e.Order_GrandTotal).HasColumnType("decimal(11, 3)");
 
+                entity.Property(e => e.Order_Promo)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Order_Shipping).HasColumnType("decimal(11, 3)");
+
                 entity.Property(e => e.Order_SubTotal).HasColumnType("decimal(11, 3)");
 
                 entity.Property(e => e.Order_Tax).HasColumnType("decimal(11, 3)");
 
                 entity.Property(e => e.Order_Total).HasColumnType("decimal(11, 3)");
+
+                entity.Property(e => e.Payment_Details)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
 
                 entity.Property(e => e.Payment_Status)
                     .HasMaxLength(50)
@@ -395,6 +410,31 @@ namespace Truck.Entity
                     .HasForeignKey(d => d.orderId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Ecom_Order_ShipmentDetails_Ecom_Orders");
+            });
+
+            modelBuilder.Entity<Ecom_Payment>(entity =>
+            {
+                entity.HasKey(e => e.Payment_ID)
+                    .HasName("Ecom_PK_Payment_ID");
+
+                entity.ToTable("Ecom_Payment");
+
+                entity.Property(e => e.Payment_Date).HasPrecision(0);
+
+                entity.Property(e => e.Payment_Method)
+                    .IsRequired()
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+
+                entity.HasOne(d => d.FK_AppUser)
+                    .WithMany(p => p.Ecom_Payments)
+                    .HasForeignKey(d => d.FK_AppUser_Id)
+                    .HasConstraintName("Ecom_Payment$FK_AppUser_Id");
+
+                entity.HasOne(d => d.FK_Invoice)
+                    .WithMany(p => p.Ecom_Payments)
+                    .HasForeignKey(d => d.FK_Invoice_Id)
+                    .HasConstraintName("Ecom_Payment$FK_Product_Id");
             });
 
             modelBuilder.Entity<Ecom_Shipping>(entity =>
@@ -478,6 +518,18 @@ namespace Truck.Entity
                     .WithMany(p => p.Ecom_ShoppingCarts)
                     .HasForeignKey(d => d.FK_Product_Id)
                     .HasConstraintName("Ecom_ShoppingCart$FK_Product_Id");
+            });
+
+            modelBuilder.Entity<GST>(entity =>
+            {
+                entity.HasKey(e => e.GST_ID)
+                    .HasName("PK_GST_ID");
+
+                entity.ToTable("GST");
+
+                entity.Property(e => e.GST_Value)
+                    .HasMaxLength(250)
+                    .IsUnicode(false);
             });
 
             modelBuilder.Entity<Insurance>(entity =>
@@ -704,6 +756,11 @@ namespace Truck.Entity
                 entity.Property(e => e.SP).HasColumnType("decimal(11, 3)");
 
                 entity.Property(e => e.createdDate).HasPrecision(0);
+
+                entity.HasOne(d => d.FK_GSTNavigation)
+                    .WithMany(p => p.Products)
+                    .HasForeignKey(d => d.FK_GST)
+                    .HasConstraintName("products$FK_Fk_GST");
 
                 entity.HasOne(d => d.FK_ProductCategory)
                     .WithMany(p => p.Products)

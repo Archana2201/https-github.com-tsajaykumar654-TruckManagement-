@@ -29,6 +29,10 @@ namespace Truck.Entity
         public int? OrderStatus { get; set; }
         public bool isCashOnDelivery { get; set; }
         public string CancelReason { get; set; }
+        public decimal? Order_Shipping { get; set; }
+        public string Order_Promo { get; set; }
+        public string FK_Razor_Order_Id { get; set; }
+        public string Payment_Details { get; set; }
 
         public virtual AppUser FK_AppUser { get; set; }
         public virtual Ecom_Shipping Fk_Shipping { get; set; }

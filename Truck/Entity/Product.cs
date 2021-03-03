@@ -34,7 +34,10 @@ namespace Truck.Entity
         public DateTime? createdDate { get; set; }
         public int? Qty { get; set; }
         public decimal? SP { get; set; }
+        public int? FK_GST { get; set; }
+        public int? Shipping_Charge { get; set; }
 
+        public virtual GST FK_GSTNavigation { get; set; }
         public virtual Product_Category_Master FK_ProductCategory { get; set; }
         public virtual AppUser Fk_User { get; set; }
         public virtual ICollection<Ecom_FavoriteListUserwise> Ecom_FavoriteListUserwises { get; set; }

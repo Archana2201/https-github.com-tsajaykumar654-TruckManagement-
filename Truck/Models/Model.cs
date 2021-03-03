@@ -209,6 +209,24 @@ namespace Truck.Models
         public int? Shipping_Charge { get; set; }
 
     }
+    public  class EcomOrderModel
+    {
+        public int Order_ID { get; set; }
+        public int? FK_AppUser_Id { get; set; }
+        public decimal? Order_SubTotal { get; set; }
+        public decimal? Order_Tax { get; set; }
+        public decimal? Order_Total { get; set; }
+        public decimal? Order_Discount { get; set; }
+        public decimal? Order_GrandTotal { get; set; }
+        public DateTime? Order_Date { get; set; }
+        public int? Fk_Shipping_id { get; set; }
+        public string Payment_Status { get; set; }
+        public string Razor_Order_Ids { get; set; }
+        public int? OrderStatus { get; set; }
+        public bool isCashOnDelivery { get; set; }
+        public string CancelReason { get; set; }
+
+    }
     public class EcomShippingModel
     {
         public int? FK_Order_Id { get; set; }
@@ -226,6 +244,136 @@ namespace Truck.Models
         public string City { get; set; }
 
         public string PostCode { get; set; }
+
+    }
+
+    public class EcomOrderItemsViewModel
+    {
+        public EcomOrdersModel ecomorder { get; set; }
+        public List<EcomOrdersItemsModel> ecomitemDetails { get; set; }
+    }
+
+    public class CancelOrderModel
+    {
+        public int? Order_ID { get; set; }
+        public string Payment_Status { get; set; }
+        public string Reason { get; set; }
+
+    }
+
+    public class EcomPaymentModel
+    {
+        public int Payment_ID { get; set; }
+        public int? FK_AppUser_Id { get; set; }
+        public int? FK_Invoice_Id { get; set; }
+        public string Payment_Method { get; set; }
+        public DateTime Payment_Date { get; set; }
+    }
+
+    public class EcomInvoiceModel
+    {
+        public int Invoice_Id { get; set; }
+        public int? FK_AppUser_Id { get; set; }
+        public int? FK_Shipment_Id { get; set; }
+        public int? FK_Order_Id { get; set; }
+        public DateTime Invoice_Date { get; set; }
+
+    }
+    public class SelectInvoice
+    {
+
+        public string path { get; set; }
+    }
+
+
+    public class EcomOrdersListModel
+    {
+
+        public int Order_ID { get; set; }
+        public int? FK_AppUser_Id { get; set; }
+        public string Order_Status { get; set; }
+        public decimal? Order_SubTotal { get; set; }
+       
+        public decimal? Order_Tax { get; set; }
+        public decimal? Order_Shipping { get; set; }
+        public decimal? Order_Total { get; set; }
+        public string Order_Promo { get; set; }
+        public decimal? Order_Discount { get; set; }
+        public decimal? Order_GrandTotal { get; set; }
+        public DateTime? Order_Date { get; set; }
+
+        public string Payment_Status { get; set; }
+        public string Payment_Details { get; set; }
+        public string FK_Razor_Order_Ids { get; set; }
+        public EcomAddressDetailsModel ShippingAddress { get; set; }
+        public List<EcomOrdersItemsModel> ecomitemDetails { get; set; }
+
+    }
+    public class EcomAddressDetailsModel
+    {
+        public int Shipment_ID { get; set; }
+
+        public string ShippingAddress { get; set; }
+
+        public string FullName { get; set; }
+
+        public string ShipingStatus { get; set; }
+
+        public string Email { get; set; }
+
+        public string PhoneNo { get; set; }
+
+        public string City { get; set; }
+
+        public string PostCode { get; set; }
+    }
+
+    public class EcomOrdersModel
+    {
+
+        public int Order_ID { get; set; }
+        public int? FK_AppUser_Id { get; set; }
+        public string Order_Status { get; set; }
+        public decimal? Order_SubTotal { get; set; }
+        public decimal? Product_Discount { get; set; }
+        public decimal? Order_Tax { get; set; }
+        public decimal? Order_Shipping { get; set; }
+        public decimal? Order_Total { get; set; }
+        public string Order_Promo { get; set; }
+        public decimal? Order_Discount { get; set; }
+        public decimal? Order_GrandTotal { get; set; }
+        public DateTime Order_Date { get; set; }
+
+        public int? Fk_Shipping_id { get; set; }
+        public string Payment_Status { get; set; }
+        public string Payment_Details { get; set; }
+
+        public string Fk_Razor_OrderIds { get; set; }
+
+        public string Fk_RazorId { get; set; }
+
+    }
+
+    public class EcomOrdersItemsModel
+    {
+
+        public int OrderItems_ID { get; set; }
+        public int? FK_Product_Id { get; set; }
+        public int? FK_Order_Id { get; set; }
+        public decimal? Order_Price { get; set; }
+        public decimal? Product_Discount { get; set; }
+        public int? Order_Quantity { get; set; }
+        public decimal? Order_Tax { get; set; }
+        public DateTime Order_Date { get; set; }
+
+        public string ProductName { get; set; }
+
+        public string PhotoPath { get; set; }
+
+        public int? isfreedelievry { get; set; }
+        public string PercentDiscount { get; set; }
+        public int? Shipping_Charge { get; set; }
+
 
     }
 

@@ -40,32 +40,33 @@ namespace Truck.Controllers
         [HttpPost("[action]")]
         public async Task<ActionResult<ApiResponse<int>>> RegisterMobile(AppUserRegistration registration)
         {
-            Random rand = new Random();
-            ConfirmationRequest request = new ConfirmationRequest
-            {
-                confirmationID = 0,
-                confirmType = 4,
-                resetTime = DateTime.Now,
-                code = rand.Next(10000, 99999).ToString()
-            };
-            await _context.ConfirmationRequests.AddAsync(request);
-            await _context.SaveChangesAsync();
-
-            var user = new AppUser
-            {
-                createdDate = DateTime.Now,
-                mobile = registration.mobile,
-                isActive = 1,
-                IsDeleted = 0,
-                verified = 0,
-                OTP = request.code,
-                OTPExpireTime = DateTime.Now,
-            };
-            await _context.AppUsers.AddAsync(user);
-            await _context.SaveChangesAsync();
-
             try
             {
+                Random rand = new Random();
+                ConfirmationRequest request = new ConfirmationRequest
+                {
+                    confirmationID = 0,
+                    confirmType = 4,
+                    resetTime = DateTime.Now,
+                    code = rand.Next(10000, 99999).ToString()
+                };
+                await _context.ConfirmationRequests.AddAsync(request);
+                await _context.SaveChangesAsync();
+
+                var user = new AppUser
+                {
+                    createdDate = DateTime.Now,
+                    mobile = registration.mobile,
+                    isActive = 1,
+                    IsDeleted = 0,
+                    verified = 0,
+                    OTP = request.code,
+                    OTPExpireTime = DateTime.Now,
+                };
+                await _context.AppUsers.AddAsync(user);
+                await _context.SaveChangesAsync();
+
+
                 if (registration.mobile.Contains("+91"))
                 {
                     //Send SMS for indian customers
@@ -75,7 +76,7 @@ namespace Truck.Controllers
             }
             catch (Exception ex)
             {
-
+                return new ApiResponse<int> { code = 0, message = "Mobile Number Already Exist" };
             }
 
             return new ApiResponse<int> { code = 1, message = "Register Successfully" };

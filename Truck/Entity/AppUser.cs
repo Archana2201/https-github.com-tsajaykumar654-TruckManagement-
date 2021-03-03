@@ -13,6 +13,7 @@ namespace Truck.Entity
             Ecom_FavoriteListUserwises = new HashSet<Ecom_FavoriteListUserwise>();
             Ecom_Invoices = new HashSet<Ecom_Invoice>();
             Ecom_Orders = new HashSet<Ecom_Order>();
+            Ecom_Payments = new HashSet<Ecom_Payment>();
             Ecom_Shippings = new HashSet<Ecom_Shipping>();
             Ecom_ShoppingCarts = new HashSet<Ecom_ShoppingCart>();
             Navigation_Masters = new HashSet<Navigation_Master>();
@@ -54,6 +55,7 @@ namespace Truck.Entity
         public virtual ICollection<Ecom_FavoriteListUserwise> Ecom_FavoriteListUserwises { get; set; }
         public virtual ICollection<Ecom_Invoice> Ecom_Invoices { get; set; }
         public virtual ICollection<Ecom_Order> Ecom_Orders { get; set; }
+        public virtual ICollection<Ecom_Payment> Ecom_Payments { get; set; }
         public virtual ICollection<Ecom_Shipping> Ecom_Shippings { get; set; }
         public virtual ICollection<Ecom_ShoppingCart> Ecom_ShoppingCarts { get; set; }
         public virtual ICollection<Navigation_Master> Navigation_Masters { get; set; }
