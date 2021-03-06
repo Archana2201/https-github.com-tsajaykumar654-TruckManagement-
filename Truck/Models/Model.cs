@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -149,9 +150,9 @@ namespace Truck.Models
 
     }
 
-    public  class ProductCategoryMasterModel
+    public class ProductCategoryMasterModel
     {
-        
+
 
         public int ProductCategory_ID { get; set; }
         public string Product_Type { get; set; }
@@ -160,9 +161,9 @@ namespace Truck.Models
         public DateTime? Last_Updated_Date { get; set; }
         public string ProdCategory_Path { get; set; }
 
-        
+
     }
-    public  class ProductModel
+    public class ProductModel
     {
         public int productID { get; set; }
         public string Product_Name { get; set; }
@@ -182,7 +183,7 @@ namespace Truck.Models
         public int? isActive { get; set; }
         public DateTime? createdDate { get; set; }
 
-       
+
     }
     public class CartModel
     {
@@ -209,7 +210,7 @@ namespace Truck.Models
         public int? Shipping_Charge { get; set; }
 
     }
-    public  class EcomOrderModel
+    public class EcomOrderModel
     {
         public int Order_ID { get; set; }
         public int? FK_AppUser_Id { get; set; }
@@ -293,7 +294,7 @@ namespace Truck.Models
         public int? FK_AppUser_Id { get; set; }
         public string Order_Status { get; set; }
         public decimal? Order_SubTotal { get; set; }
-       
+
         public decimal? Order_Tax { get; set; }
         public decimal? Order_Shipping { get; set; }
         public decimal? Order_Total { get; set; }
@@ -385,7 +386,7 @@ namespace Truck.Models
         public int? Fk_Brand_Id { get; set; }
 
     }
-    public  class EcomShoppingCartModel
+    public class EcomShoppingCartModel
     {
         public int ShoppingCart_ID { get; set; }
         public int? FK_AppUser_Id { get; set; }
@@ -396,7 +397,7 @@ namespace Truck.Models
         public int? status { get; set; }
         public decimal? MRP { get; set; }
 
-       
+
     }
 
     public class VehicleModel
@@ -409,7 +410,7 @@ namespace Truck.Models
 
     }
 
-    public  class VehicleInfoModel
+    public class VehicleInfoModel
     {
         public int VehicleRenewalInfo_ID { get; set; }
         public int? FK_VehicleRenewal_ID { get; set; }
@@ -419,17 +420,58 @@ namespace Truck.Models
         public string Vehicle_BackImage { get; set; }
         public string Insurance_Company { get; set; }
         public string Vehicle_ModelNumber { get; set; }
-        
+
         public int? FK_Period_ID { get; set; }
         public string Vehicle_Name { get; set; }
         public string Vehicle_Number { get; set; }
         public int? Vehicle_Company_ID { get; set; }
         public int? Vehicle_Model_ID { get; set; }
 
-        public bool vehicle_type { get; set; }
+        public bool? vehicle_type { get; set; }
     }
 
-    public  class VehicleDocumentModel
+    public class TeamModel
+    {
+        public int Team_ID { get; set; }
+        public int FK_userID { get; set; }
+        public int FK_TeamRoleID { get; set; }
+        public string Name { get; set; }
+        public string Branch { get; set; }
+        public string Mobile { get; set; }
+        public string DP_Image { get; set; }
+        public int? points { get; set; }
+        public int? isDeleted { get; set; }
+        public int? status { get; set; }
+        public string refererCode { get; set; }
+        public string whatsAppNo { get; set; }
+
+        public string Roles { get; set; }
+    }
+
+    public class assettech
+    {
+        public int Team_ID { get; set; }
+        public int FK_userID { get; set; }
+        public int FK_TeamRoleID { get; set; }
+        public string Name { get; set; }
+        public string Branch { get; set; }
+        public string Mobile { get; set; }
+        public string DP_Image { get; set; }
+        public int? points { get; set; }
+        public int? isDeleted { get; set; }
+        public int? status { get; set; }
+        public string refererCode { get; set; }
+        public string whatsAppNo { get; set; }
+    }
+
+    public class TeamListModel
+    {
+        public List<assettech> comptech { get; set; }
+
+
+
+    }
+    public class VehicleDocumentModel
     {
         public int VehicleDocuments_ID { get; set; }
         public int? FK_VehicleRenewal_ID { get; set; }
@@ -441,7 +483,9 @@ namespace Truck.Models
         public string Insurance_Company { get; set; }
         public int? FK_Period_ID { get; set; }
 
-      
+        public IFormFile filename { get; set; }
+        public string extension { get; set; }
+
     }
 
 

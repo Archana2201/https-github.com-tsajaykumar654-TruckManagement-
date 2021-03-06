@@ -212,9 +212,8 @@ namespace Truck.Controllers
 
                 vehicleinfo.Vehicle_Model_ID = (model.Vehicle_Model_ID == 0) ? vehicleinfo.Vehicle_Model_ID : model.Vehicle_Model_ID;
                 vehicleinfo.Vehicle_Number = (string.IsNullOrEmpty(model.Vehicle_Number)) ? vehicleinfo.Vehicle_Number : model.Vehicle_Number;
-                vehicleinfo.VehicleRenewalInfo_ID = (model.VehicleRenewalInfo_ID == 0) ? vehicleinfo.VehicleRenewalInfo_ID : model.VehicleRenewalInfo_ID;
                 vehicleinfo.Vehicle_ModelNumber = (string.IsNullOrEmpty(model.Vehicle_ModelNumber)) ? vehicleinfo.Vehicle_ModelNumber : model.Vehicle_ModelNumber;
-               // vehicleinfo.Vehicle_Company_ID = (model.Vehicle_Company_ID == 0) ? vehicleinfo.Vehicle_Company_ID : model.Vehicle_Company_ID;
+                vehicleinfo.Vehicle_Company_ID = (model.Vehicle_Company_ID == 0) ? vehicleinfo.Vehicle_Company_ID : model.Vehicle_Company_ID;
                 vehicleinfo.vehicle_type = model.vehicle_type;//0--Personal n 1--Corporate
                 if (vehicle == null)
                 {
@@ -245,7 +244,8 @@ namespace Truck.Controllers
                     {
                         await _storage.DeleteIfExists(vehicledocs.Vehicle_FrontImage);
                     }
-                    vehicledocs.Vehicle_FrontImage = await _storage.Save(model.Vehicle_FrontImage, "/Vehicle-Docs");
+
+                    vehicledocs.Vehicle_FrontImage = await _storage.Save(model.filename, "/Vehicle - Docs", model.extension);
                 }
                 if (!string.IsNullOrEmpty(model.Vehicle_BackImage))
                 {
@@ -253,7 +253,8 @@ namespace Truck.Controllers
                     {
                         await _storage.DeleteIfExists(vehicledocs.Vehicle_BackImage);
                     }
-                    vehicledocs.Vehicle_BackImage = await _storage.Save(model.Vehicle_BackImage, "/Vehicle-Docs");
+
+                    vehicledocs.Vehicle_BackImage = await _storage.Save(model.filename, "/Vehicle - Docs", model.extension);
                 }
 
                 vehicledocs.Registered_Date = model.Registered_Date;
@@ -276,6 +277,24 @@ namespace Truck.Controllers
             {
                 return new ApiResponse<VehicleDocumentModel> { code = 0, message = ex.Message, data = null };
             }
+        }
+
+
+
+        [HttpGet("[action]")]
+        public async Task<ActionResult<IEnumerable<VehicleInfoModel>>> VehicleList()
+        {
+            return await _context.Vehicle_Renewal_Infos.Select(x => new VehicleInfoModel
+            {
+                VehicleRenewalInfo_ID = x.VehicleRenewalInfo_ID,
+                Vehicle_Number = x.Vehicle_Number,
+                Vehicle_Model_ID = x.Vehicle_Model_ID,
+                Vehicle_ModelNumber = x.Vehicle_ModelNumber,
+                Vehicle_Company_ID = x.Vehicle_Company_ID,
+                vehicle_type = x.vehicle_type
+
+
+            }).ToListAsync();
         }
 
 

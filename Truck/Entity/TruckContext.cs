@@ -59,7 +59,7 @@ namespace Truck.Entity
         public virtual DbSet<Vehicle_Renewal_Master> Vehicle_Renewal_Masters { get; set; }
         public virtual DbSet<Wallet> Wallets { get; set; }
 
-      
+        
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasAnnotation("Relational:Collation", "SQL_Latin1_General_CP1_CI_AS");
@@ -842,6 +842,10 @@ namespace Truck.Entity
 
                 entity.Property(e => e.Name)
                     .HasMaxLength(45)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Roles)
+                    .HasMaxLength(50)
                     .IsUnicode(false);
 
                 entity.Property(e => e.refererCode)

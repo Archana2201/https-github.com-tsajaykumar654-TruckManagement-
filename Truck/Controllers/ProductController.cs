@@ -135,9 +135,9 @@ namespace Truck.Controllers
 
 
         [HttpGet("[action]")]
-        public async Task<ActionResult<IEnumerable<CartModel>>> GetEcomCartDetails()
+        public async Task<ActionResult<IEnumerable<CartModel>>> GetEcomCartDetails(int userid)
         {
-            return await _context.Ecom_ShoppingCarts.Where(x => x.FK_AppUser_Id == _repos.UserID  && x.status == 1).Select(x => new CartModel
+            return await _context.Ecom_ShoppingCarts.Where(x => x.FK_AppUser_Id == userid && x.status == 1).Select(x => new CartModel
             {
                 productID = x.FK_Product_Id,
                 ShoppingCart_ID = x.ShoppingCart_ID,
@@ -378,9 +378,9 @@ namespace Truck.Controllers
         }
 
         [HttpGet("[action]")]
-        public async Task<ActionResult<IEnumerable<EcomOrdersListModel>>> EcomOrderList()
+        public async Task<ActionResult<IEnumerable<EcomOrdersListModel>>> EcomOrderList(int userid)
         {
-            return await _context.Ecom_Orders.Where(x => x.FK_AppUser_Id == _repos.UserID).Select(x => new EcomOrdersListModel
+            return await _context.Ecom_Orders.Where(x => x.FK_AppUser_Id == userid).Select(x => new EcomOrdersListModel
             {
                 Order_ID = x.Order_ID,
                 Order_Status = x.OrderStatusNavigation.OrderStatus,

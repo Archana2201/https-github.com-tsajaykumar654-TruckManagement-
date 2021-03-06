@@ -71,7 +71,8 @@ namespace Truck.Controllers
                 {
                     //Send SMS for indian customers
                     var Message = $"{request.code} one time password to proceed on Truck account activation.It is valid till 5 mins.Do not share your OTP with anyone.";
-                    await _repos.SendSMS(registration.mobile, Message);
+                    //await _repos.SendSMS(registration.mobile, Message);
+                    return new ApiResponse<int> { code = 1, message = "12345" };
                 }
             }
             catch (Exception ex)
@@ -103,7 +104,7 @@ namespace Truck.Controllers
                     {
                         user.verified = 1;
                         _context.Update(user);
-                        return new ApiResponse<int> { code = 1 };
+                        return new ApiResponse<int> { code = 1 ,message="Verified"};
                     }
                     return new ApiResponse<int> { code = 0, message = "OTP Expired. Please proceed to resend OTP" };
                 }

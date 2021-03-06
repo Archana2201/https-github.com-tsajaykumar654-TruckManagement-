@@ -19,6 +19,7 @@ namespace Truck.Entity
         public int? status { get; set; }
         public string refererCode { get; set; }
         public string whatsAppNo { get; set; }
+        public string Roles { get; set; }
 
         public virtual Teams_Role FK_TeamRole { get; set; }
         public virtual AppUser FK_user { get; set; }
