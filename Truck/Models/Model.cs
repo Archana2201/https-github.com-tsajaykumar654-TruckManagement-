@@ -448,7 +448,7 @@ namespace Truck.Models
         public string Roles { get; set; }
     }
 
-    public class assettech
+    public class TeamModelList
     {
         public int Team_ID { get; set; }
         public int FK_userID { get; set; }
@@ -462,15 +462,11 @@ namespace Truck.Models
         public int? status { get; set; }
         public string refererCode { get; set; }
         public string whatsAppNo { get; set; }
+
+        public List<string> Roles { get; set; }
     }
 
-    public class TeamListModel
-    {
-        public List<assettech> comptech { get; set; }
 
-
-
-    }
     public class VehicleDocumentModel
     {
         public int VehicleDocuments_ID { get; set; }
@@ -488,5 +484,62 @@ namespace Truck.Models
 
     }
 
+    public class InsuranceRenewedModel
+    {
+        public int InsuranceRenewed_ID { get; set; }
+        public DateTime Registered_Date { get; set; }
+        public DateTime Expiry_Date { get; set; }
+        public string Vehicle_FrontImage { get; set; }
+        public string Vehicle_BackImage { get; set; }
+        public string Insurance_Company { get; set; }
 
+        public IFormFile filename { get; set; }
+        public string extension { get; set; }
+    }
+
+    public class VehicleDocumentModelList
+    {
+        public List<VehicleDocModel> Npermit { get; set; }
+        public List<VehicleDocModel> ProductsOrdered { get; set; }
+        public List<VehicleDocModel> RoadTax { get; set; }
+        public List<VehicleDocModel> Insurance { get; set; }
+    }
+
+    public class VehicleDocModel
+    {
+
+        public string Vehicle_FrontImage { get; set; }
+
+        public string Vehiclename { get; set; }
+
+    }
+    public class DocList
+    {
+        public string year { get; set; }
+        public List<ListDoc> doclists { get; set; }
+    }
+
+    public class ListDoc
+    {
+        public string images { get; set; }
+       
+    }
+    public  class ContactModel
+    {
+        public int Contact_ID { get; set; }
+        public string Phone_Number { get; set; }
+        public string Request_Type { get; set; }
+        public string Message { get; set; }
+    }
+    public  class SettingModel
+    {
+        public int Settings_ID { get; set; }
+        public int? FK_LangID { get; set; }
+        public int? FK_ThemeID { get; set; }
+        public int? Whatsapp_Notify { get; set; }
+        public int? SMS_Notify { get; set; }
+        public int? IVR_Notify { get; set; }
+
+        
+    }
 }

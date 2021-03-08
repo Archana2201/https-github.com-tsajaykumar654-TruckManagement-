@@ -36,6 +36,7 @@ namespace Truck.Entity
         public virtual DbSet<Ecom_ShoppingCart> Ecom_ShoppingCarts { get; set; }
         public virtual DbSet<GST> GSTs { get; set; }
         public virtual DbSet<Insurance> Insurances { get; set; }
+        public virtual DbSet<Insurance_Renewed> Insurance_Reneweds { get; set; }
         public virtual DbSet<KYC> KYCs { get; set; }
         public virtual DbSet<Language> Languages { get; set; }
         public virtual DbSet<LanguageMapping_Master> LanguageMapping_Masters { get; set; }
@@ -547,6 +548,30 @@ namespace Truck.Entity
                     .IsUnicode(false);
             });
 
+            modelBuilder.Entity<Insurance_Renewed>(entity =>
+            {
+                entity.HasKey(e => e.InsuranceRenewed_ID)
+                    .HasName("PK_InsuranceRenewed_ID");
+
+                entity.ToTable("Insurance_Renewed");
+
+                entity.Property(e => e.Expiry_Date).HasPrecision(0);
+
+                entity.Property(e => e.Insurance_Company)
+                    .IsRequired()
+                    .HasMaxLength(50);
+
+                entity.Property(e => e.Registered_Date).HasPrecision(0);
+
+                entity.Property(e => e.Vehicle_BackImage)
+                    .IsRequired()
+                    .HasMaxLength(200);
+
+                entity.Property(e => e.Vehicle_FrontImage)
+                    .IsRequired()
+                    .HasMaxLength(200);
+            });
+
             modelBuilder.Entity<KYC>(entity =>
             {
                 entity.HasKey(e => e.Kyc_ID)
@@ -933,6 +958,11 @@ namespace Truck.Entity
                     .IsRequired()
                     .HasMaxLength(200);
 
+                entity.HasOne(d => d.FK_APPUSER)
+                    .WithMany(p => p.Vehicle_Documents)
+                    .HasForeignKey(d => d.FK_APPUSERID)
+                    .HasConstraintName("Vehicle_Documents$FK_AppUser_Id");
+
                 entity.HasOne(d => d.FK_Period)
                     .WithMany(p => p.Vehicle_Documents)
                     .HasForeignKey(d => d.FK_Period_ID)
@@ -1005,6 +1035,11 @@ namespace Truck.Entity
                 entity.Property(e => e.Vehicle_Number)
                     .IsRequired()
                     .HasMaxLength(50);
+
+                entity.HasOne(d => d.FK_APPUSER)
+                    .WithMany(p => p.Vehicle_Renewal_Infos)
+                    .HasForeignKey(d => d.FK_APPUSERID)
+                    .HasConstraintName("FK_APPUSERID$FK_AppUser_Id");
 
                 entity.HasOne(d => d.FK_Period)
                     .WithMany(p => p.Vehicle_Renewal_Infos)

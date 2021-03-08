@@ -80,14 +80,14 @@ namespace Truck.Controllers
 
 
         [HttpGet("[action]")]
-        public async Task<ActionResult<IEnumerable<TeamModel>>> TeamList()
+        public async Task<ActionResult<IEnumerable<TeamModelList>>> TeamList()
         {
-            return await _context.Teams.Select(x => new TeamModel
+            return await _context.Teams.Select(x => new TeamModelList
             {
                 Name = x.Name,
                 Mobile = x.Mobile,
                 Branch = x.Branch,
-                //Roles= _context.Teams_Roles.Where(w => w.Team_RoleID == x.Team_ID).Select(s => s.Team_RoleType).FirstOrDefaultAsync()
+                Roles= _context.Teams_Roles.Where(w => w.Team_RoleID.ToString().Contains(x.Roles)).Select(s => s.Team_RoleType).ToList()
             }).ToListAsync();
         }
 

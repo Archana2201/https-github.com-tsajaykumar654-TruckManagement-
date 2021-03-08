@@ -85,17 +85,17 @@ namespace Truck.Controllers
 
         [AllowAnonymous]
         [HttpGet("[action]")]
-        public async Task<ApiResponse<int>> VerifyOTP(string mobile, string token)
+        public async Task<ApiResponse<AuthData>> VerifyOTP(string mobile, string otp)
         {
             try
             {
                 if (string.IsNullOrEmpty(mobile))
-                    return new ApiResponse<int> { code = 0, message = "Invalid user" };
-                if (string.IsNullOrEmpty(token))
-                    return new ApiResponse<int> { code = 0, message = "Invalid token" };
+                    return new ApiResponse<AuthData> { code = 0, message = "Invalid user" };
+                if (string.IsNullOrEmpty(otp))
+                    return new ApiResponse<AuthData> { code = 0, message = "Invalid token" };
 
                 AppUser user = await _context.AppUsers.Where(x => x.mobile == mobile && x.verified == 0).FirstOrDefaultAsync();
-                var appuser = await _context.ConfirmationRequests.Where(x => x.code == token && x.confirmType == 4).FirstOrDefaultAsync();
+                var appuser = await _context.ConfirmationRequests.Where(x => x.code == otp && x.confirmType == 4).FirstOrDefaultAsync();
                 if (appuser != null)
                 {
                     var otpdate = Convert.ToDateTime(appuser.resetTime);
@@ -104,15 +104,41 @@ namespace Truck.Controllers
                     {
                         user.verified = 1;
                         _context.Update(user);
-                        return new ApiResponse<int> { code = 1 ,message="Verified"};
+
+                        //
+                        SymmetricSecurityKey symmentricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration.GetValue<string>("JwtOptions:SecurityKey")));
+                        SigningCredentials signingCredentials = new SigningCredentials(symmentricSecurityKey, SecurityAlgorithms.HmacSha256Signature);
+                        List<Claim> claims = new List<Claim>
+                         {
+                             new Claim("mobile", user.mobile),
+                              new Claim("UserID", user.userID.ToString()),
+   
+                         };
+
+                        JwtSecurityToken token = new JwtSecurityToken(
+                               issuer: Configuration.GetValue<string>("JwtOptions:Issuer"),
+                               audience: Configuration.GetValue<string>("JwtOptions:Audience"),
+                               expires: DateTime.Now.AddDays(1),
+                               signingCredentials: signingCredentials,
+                               claims: claims
+                           );
+                        AuthData data = new AuthData
+                        {
+                            accessToken = new JwtSecurityTokenHandler().WriteToken(token),
+                            mobile = user.mobile,
+
+                        };
+                        return new ApiResponse<AuthData> { code = 1, message = "Verified", data = data };
+                        //
+
                     }
-                    return new ApiResponse<int> { code = 0, message = "OTP Expired. Please proceed to resend OTP" };
+                    return new ApiResponse<AuthData> { code = 0, message = "OTP Expired. Please proceed to resend OTP" };
                 }
-                return new ApiResponse<int> { code = 0, message = "Invalid user" };
+                return new ApiResponse<AuthData> { code = 0, message = "Invalid user" };
             }
             catch (Exception)
             {
-                return new ApiResponse<int> { code = 0, message = "Error occured while verifying" };
+                return new ApiResponse<AuthData> { code = 0, message = "Error occured while verifying" };
             }
         }
 

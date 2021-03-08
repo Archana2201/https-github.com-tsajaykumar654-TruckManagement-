@@ -279,6 +279,65 @@ namespace Truck.Controllers
             }
         }
 
+        [HttpPost("[action]")]
+        public async Task<ActionResult<ApiResponse<SettingModel>>> CreateOrUpdateSettings(SettingModel model)
+        {
+            try
+            {
+                var settings = await _context.Settings.Where(x => x.Settings_ID == model.Settings_ID).FirstOrDefaultAsync();
+                Setting Settinmodel = (settings == null) ? new Setting() : settings;
+
+
+
+                Settinmodel.FK_LangID = (model.FK_LangID == 0) ? Settinmodel.FK_LangID : model.FK_LangID;
+                Settinmodel.FK_ThemeID = (model.FK_ThemeID == 0) ? Settinmodel.FK_ThemeID : model.FK_ThemeID;
+                Settinmodel.Whatsapp_Notify = (model.Whatsapp_Notify == 0) ? Settinmodel.Whatsapp_Notify : model.Whatsapp_Notify;
+                Settinmodel.SMS_Notify = (model.SMS_Notify == 0) ? Settinmodel.SMS_Notify : model.SMS_Notify;
+                Settinmodel.IVR_Notify = (model.IVR_Notify == 0) ? Settinmodel.IVR_Notify : model.IVR_Notify;
+
+                if (settings == null)
+                {
+                    _context.Settings.Add(Settinmodel);
+                }
+
+                await _context.SaveChangesAsync();
+
+                return new ApiResponse<SettingModel> { code = 1, message = "Successfull" };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<SettingModel> { code = 0, message = ex.Message, data = null };
+            }
+        }
+
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult<ApiResponse<ContactModel>>> CreateContacts(ContactModel model)
+        {
+            try
+            {
+                var con = await _context.Contacts.Where(x => x.Contact_ID == model.Contact_ID).FirstOrDefaultAsync();
+                Contact contacts = (con == null) ? new Contact() : con;
+
+                contacts.Phone_Number = (string.IsNullOrEmpty(model.Phone_Number)) ? contacts.Phone_Number : model.Phone_Number;
+                contacts.Request_Type = (string.IsNullOrEmpty(model.Request_Type)) ? contacts.Request_Type : model.Request_Type;
+                contacts.Message = (string.IsNullOrEmpty(model.Message)) ? contacts.Message : model.Message;
+                
+                if (con == null)
+                {
+                    _context.Contacts.Add(contacts);
+                }
+
+                await _context.SaveChangesAsync();
+
+                return new ApiResponse<ContactModel> { code = 1, message = "Successfull" };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<ContactModel> { code = 0, message = ex.Message, data = null };
+            }
+        }
+
 
 
         [HttpGet("[action]")]
@@ -295,6 +354,90 @@ namespace Truck.Controllers
 
 
             }).ToListAsync();
+        }
+        [HttpPost("[action]")]
+        public async Task<ActionResult<ApiResponse<InsuranceRenewedModel>>> UploadInsuranceRenewal(InsuranceRenewedModel model)
+        {
+            try
+            {
+                var vehicle = await _context.Insurance_Reneweds.Where(x => x.InsuranceRenewed_ID == model.InsuranceRenewed_ID).FirstOrDefaultAsync();
+                Insurance_Renewed vehicledocs = (vehicle == null) ? new Insurance_Renewed() : vehicle;
+
+                if (!string.IsNullOrEmpty(model.Vehicle_FrontImage))
+                {
+                    if (vehicledocs.Vehicle_FrontImage != "/images/profile-picture/default.png")
+                    {
+                        await _storage.DeleteIfExists(vehicledocs.Vehicle_FrontImage);
+                    }
+
+                    vehicledocs.Vehicle_FrontImage = await _storage.Save(model.filename, "/Vehicle - Docs", model.extension);
+                }
+                if (!string.IsNullOrEmpty(model.Vehicle_BackImage))
+                {
+                    if (vehicledocs.Vehicle_BackImage != "/images/profile-picture/default.png")
+                    {
+                        await _storage.DeleteIfExists(vehicledocs.Vehicle_BackImage);
+                    }
+
+                    vehicledocs.Vehicle_BackImage = await _storage.Save(model.filename, "/Vehicle - Docs", model.extension);
+                }
+
+                vehicledocs.Registered_Date = model.Registered_Date;
+                vehicledocs.Expiry_Date = model.Expiry_Date;
+
+                if (vehicle == null)
+                {
+                    _context.Insurance_Reneweds.Add(vehicledocs);
+                }
+
+                await _context.SaveChangesAsync();
+
+                return new ApiResponse<InsuranceRenewedModel> { code = 1, message = "Successfull" };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<InsuranceRenewedModel> { code = 0, message = ex.Message, data = null };
+            }
+        }
+
+
+        [HttpGet("[action]")]
+        public async Task<ActionResult<IEnumerable<InsuranceRenewedModel>>> RenewalList()
+        {
+            return await _context.Insurance_Reneweds.Select(x => new InsuranceRenewedModel
+            {
+                InsuranceRenewed_ID = x.InsuranceRenewed_ID,
+                Registered_Date = x.Registered_Date,
+                Expiry_Date = x.Expiry_Date,
+                Vehicle_FrontImage = x.Vehicle_FrontImage,
+                Vehicle_BackImage = x.Vehicle_BackImage,
+                Insurance_Company = x.Insurance_Company
+            }).ToListAsync();
+        }
+
+
+        [HttpGet("[action]")]
+        public async Task<ActionResult<ApiResponse<IEnumerable<DocList>>>> GetDocListYearwise(int userid)
+        {
+            try
+            {
+                var query = await _context.Vehicle_Documents.Where(w => w.FK_APPUSERID == userid).Select(s => new DocList
+                {
+                    year = s.Registered_Date.ToString("yyyy"),
+
+                    doclists = _context.Vehicle_Documents.Where(a => a.FK_APPUSERID == userid).Select(i => new ListDoc
+                    {
+
+                        images = i.Vehicle_FrontImage,
+
+                    }).ToList(),
+                }).ToListAsync();
+                return new ApiResponse<IEnumerable<DocList>> { code = 1, message = "Successfull", data = query };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<IEnumerable<DocList>> { code = 0, message = ex.Message, data = null };
+            }
         }
 
 

@@ -16,7 +16,9 @@ namespace Truck.Entity
         public string Vehicle_BackImage { get; set; }
         public string Insurance_Company { get; set; }
         public int? FK_Period_ID { get; set; }
+        public int? FK_APPUSERID { get; set; }
 
+        public virtual AppUser FK_APPUSER { get; set; }
         public virtual Vehicle_Period FK_Period { get; set; }
         public virtual Vehicle_Renewal_Master FK_VehicleRenewal { get; set; }
         public virtual Vehicle_Renewal_Info FK_VehicleRenewalinfo { get; set; }

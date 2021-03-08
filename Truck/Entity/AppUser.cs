@@ -19,6 +19,8 @@ namespace Truck.Entity
             Navigation_Masters = new HashSet<Navigation_Master>();
             Products = new HashSet<Product>();
             Teams = new HashSet<Team>();
+            Vehicle_Documents = new HashSet<Vehicle_Document>();
+            Vehicle_Renewal_Infos = new HashSet<Vehicle_Renewal_Info>();
         }
 
         public int userID { get; set; }
@@ -61,5 +63,7 @@ namespace Truck.Entity
         public virtual ICollection<Navigation_Master> Navigation_Masters { get; set; }
         public virtual ICollection<Product> Products { get; set; }
         public virtual ICollection<Team> Teams { get; set; }
+        public virtual ICollection<Vehicle_Document> Vehicle_Documents { get; set; }
+        public virtual ICollection<Vehicle_Renewal_Info> Vehicle_Renewal_Infos { get; set; }
     }
 }
