@@ -231,30 +231,33 @@ namespace Truck.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<ApiResponse<VehicleDocumentModel>>> UploadDocuments(VehicleDocumentModel model)
+        public async Task<ActionResult<ApiResponse<int>>> UploadDocuments([FromForm] VehicleDocumentModel model)
         {
             try
             {
                 var vehicle = await _context.Vehicle_Documents.Where(x => x.VehicleDocuments_ID == model.VehicleDocuments_ID).FirstOrDefaultAsync();
                 Vehicle_Document vehicledocs = (vehicle == null) ? new Vehicle_Document() : vehicle;
-
-                if (!string.IsNullOrEmpty(model.Vehicle_FrontImage))
+                if (model.frontfilename.Length > 0)
                 {
-                    if (vehicledocs.Vehicle_FrontImage != "/images/profile-picture/default.png")
+                    if (!string.IsNullOrEmpty(model.Vehicle_FrontImage))
                     {
-                        await _storage.DeleteIfExists(vehicledocs.Vehicle_FrontImage);
+                        if (vehicledocs.Vehicle_FrontImage != "/images/profile-picture/default.png")
+                        {
+                            await _storage.DeleteIfExists(vehicledocs.Vehicle_FrontImage);
+                        }
+                        string frontFullPath = await _storage.Save(model.frontfilename, "/Vehicle - Docs", model.extension);
+                        vehicledocs.Vehicle_FrontImage = frontFullPath;
                     }
 
-                    vehicledocs.Vehicle_FrontImage = await _storage.Save(model.filename, "/Vehicle - Docs", model.extension);
-                }
-                if (!string.IsNullOrEmpty(model.Vehicle_BackImage))
-                {
-                    if (vehicledocs.Vehicle_BackImage != "/images/profile-picture/default.png")
+                    if (!string.IsNullOrEmpty(model.Vehicle_BackImage))
                     {
-                        await _storage.DeleteIfExists(vehicledocs.Vehicle_BackImage);
+                        if (vehicledocs.Vehicle_BackImage != "/images/profile-picture/default.png")
+                        {
+                            await _storage.DeleteIfExists(vehicledocs.Vehicle_BackImage);
+                        }
+                        string backFullPath = await _storage.Save(model.backfilename, "/Vehicle - Docs", model.extension);
+                        vehicledocs.Vehicle_BackImage = backFullPath;
                     }
-
-                    vehicledocs.Vehicle_BackImage = await _storage.Save(model.filename, "/Vehicle - Docs", model.extension);
                 }
 
                 vehicledocs.Registered_Date = model.Registered_Date;
@@ -271,11 +274,11 @@ namespace Truck.Controllers
 
                 await _context.SaveChangesAsync();
 
-                return new ApiResponse<VehicleDocumentModel> { code = 1, message = "Successfull" };
+                return new ApiResponse<int> { code = 1, message = "Successfull" };
             }
             catch (Exception ex)
             {
-                return new ApiResponse<VehicleDocumentModel> { code = 0, message = ex.Message, data = null };
+                return new ApiResponse<int> { code = 0, message = ex.Message };
             }
         }
 
@@ -322,7 +325,7 @@ namespace Truck.Controllers
                 contacts.Phone_Number = (string.IsNullOrEmpty(model.Phone_Number)) ? contacts.Phone_Number : model.Phone_Number;
                 contacts.Request_Type = (string.IsNullOrEmpty(model.Request_Type)) ? contacts.Request_Type : model.Request_Type;
                 contacts.Message = (string.IsNullOrEmpty(model.Message)) ? contacts.Message : model.Message;
-                
+
                 if (con == null)
                 {
                     _context.Contacts.Add(contacts);

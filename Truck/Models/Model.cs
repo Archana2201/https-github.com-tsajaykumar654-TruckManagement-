@@ -479,7 +479,9 @@ namespace Truck.Models
         public string Insurance_Company { get; set; }
         public int? FK_Period_ID { get; set; }
 
-        public IFormFile filename { get; set; }
+        public IFormFile frontfilename { get; set; }
+
+        public IFormFile backfilename { get; set; }
         public string extension { get; set; }
 
     }

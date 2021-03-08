@@ -168,14 +168,21 @@ namespace Truck.Controllers
         [HttpDelete("[action]")]
         public async Task<ActionResult<ApiResponse<int>>> DeleteAllCart(int userid)
         {
-            
-            var cartid = _context.Ecom_ShoppingCarts.Where(x => x.FK_AppUser_Id == userid);
-            if (cartid != null)
+
+            try
             {
-                _context.Ecom_ShoppingCarts.RemoveRange(_context.Ecom_ShoppingCarts.Where(x => x.FK_AppUser_Id == _repos.UserID));
-                await _context.SaveChangesAsync();
+                var cartid = _context.Ecom_ShoppingCarts.Where(x => x.FK_AppUser_Id == userid);
+                if (cartid != null)
+                {
+                    _context.Ecom_ShoppingCarts.RemoveRange(_context.Ecom_ShoppingCarts.Where(x => x.FK_AppUser_Id == _repos.UserID));
+                    await _context.SaveChangesAsync();
+                }
+                return new ApiResponse<int> { code = 1, message = "Deleted Successfully" };
             }
-            return new ApiResponse<int> { code = 1 };
+            catch(Exception ex)
+            {
+                return new ApiResponse<int> { code = 1, message = ex.Message };
+            }
         }
 
         [HttpPost("[action]")]
@@ -204,7 +211,7 @@ namespace Truck.Controllers
                 }
                 catch (Exception ex)
                 {
-                    return new ApiResponse<int> { code = 0, data = 0 };
+                    return new ApiResponse<int> { code = 0, data = 0,message=ex.Message };
                 }
             }
 

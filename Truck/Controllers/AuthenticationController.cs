@@ -72,7 +72,7 @@ namespace Truck.Controllers
                     //Send SMS for indian customers
                     var Message = $"{request.code} one time password to proceed on Truck account activation.It is valid till 5 mins.Do not share your OTP with anyone.";
                     //await _repos.SendSMS(registration.mobile, Message);
-                    return new ApiResponse<int> { code = 1, message = "12345" };
+                    return new ApiResponse<int> { code = 1, message = Message };
                 }
             }
             catch (Exception ex)
