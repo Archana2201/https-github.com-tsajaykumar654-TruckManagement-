@@ -13,6 +13,7 @@ namespace Truck.Entity
             Ecom_OrderItems = new HashSet<Ecom_OrderItem>();
             Ecom_Shippings = new HashSet<Ecom_Shipping>();
             Ecom_ShoppingCarts = new HashSet<Ecom_ShoppingCart>();
+            Ecom_TopicDetails_Products = new HashSet<Ecom_TopicDetails_Product>();
         }
 
         public int productID { get; set; }
@@ -44,5 +45,6 @@ namespace Truck.Entity
         public virtual ICollection<Ecom_OrderItem> Ecom_OrderItems { get; set; }
         public virtual ICollection<Ecom_Shipping> Ecom_Shippings { get; set; }
         public virtual ICollection<Ecom_ShoppingCart> Ecom_ShoppingCarts { get; set; }
+        public virtual ICollection<Ecom_TopicDetails_Product> Ecom_TopicDetails_Products { get; set; }
     }
 }

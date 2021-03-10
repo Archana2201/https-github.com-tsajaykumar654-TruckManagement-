@@ -27,9 +27,11 @@ namespace Truck.Entity
         public string Vehicle_FrontImage { get; set; }
         public DateTime Expiry_Date { get; set; }
         public int? FK_APPUSERID { get; set; }
+        public int? FK_VehicleMaster_ID { get; set; }
 
         public virtual AppUser FK_APPUSER { get; set; }
         public virtual Vehicle_Period FK_Period { get; set; }
+        public virtual Vehicle_Master FK_VehicleMaster { get; set; }
         public virtual Vehicle_Renewal_Master FK_VehicleRenewal { get; set; }
         public virtual Vehicle_Company_Master Vehicle_Company { get; set; }
         public virtual Vehicle_Model_Master Vehicle_Model { get; set; }

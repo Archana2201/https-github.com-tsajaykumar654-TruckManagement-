@@ -103,9 +103,9 @@ namespace Truck.Models
         public string email { get; set; }
 
         public DateTime? dateOfBirth { get; set; }
-        public string profileImage { get; set; }
-        public string pancard { get; set; }
-        public string aadharcard { get; set; }
+        public IFormFile profileImage { get; set; }
+        public IFormFile pancard { get; set; }
+        public IFormFile aadharcard { get; set; }
         public string gender { get; set; }
         public string Address { get; set; }
         public string company { get; set; }
@@ -113,6 +113,9 @@ namespace Truck.Models
         public int? cityID { get; set; }
         public int? stateID { get; set; }
         public int? countryID { get; set; }
+        public string Profileextension { get; set; }
+        public string pancardextension { get; set; }
+        public string aadharcardextension { get; set; }
     }
     public class AuthData
     {
@@ -399,7 +402,46 @@ namespace Truck.Models
 
 
     }
+    public class EcomTopicModel
+    {
+        public int? FK_Brandid { get; set; }
 
+        public int? Topic_Id { get; set; }
+
+        public string Topic_Name { get; set; }
+
+        public string Topic_Description { get; set; }
+
+        public bool Topic_CategoryYN { get; set; }
+
+        public string Brand_Image { get; set; }
+        public bool? ADDYN { get; set; }
+        public bool? Slider { get; set; }
+        public IFormFile filename { get; set; }
+        public string extension { get; set; }
+
+    }
+
+    public class EcomTopicSubCatDetailsModel
+    {
+        public int FK_Topic_ID { get; set; }
+        public int FK_Brandid { get; set; }
+        public List<SubCatlist> prodlst { get; set; }
+    }
+    public class SubCatlist
+    {
+        public int value { get; set; }
+    }
+    public class EcomTopicProdDetailsModel
+    {
+        public int FK_Topic_ID { get; set; }
+        public int FK_Brandid { get; set; }
+        public List<Productlist> prodlst { get; set; }
+    }
+    public class Productlist
+    {
+        public int value { get; set; }
+    }
     public class VehicleModel
     {
 
@@ -410,6 +452,21 @@ namespace Truck.Models
 
     }
 
+    public class VehicleCreateModel
+    {
+        public int VehicleRenewalInfo_ID { get; set; }
+        public int? FK_VehicleRenewal_ID { get; set; }
+       
+        public string Vehicle_ModelNumber { get; set; }
+
+       
+        public string Vehicle_Name { get; set; }
+        public string Vehicle_Number { get; set; }
+        public int? Vehicle_Company_ID { get; set; }
+        public int? Vehicle_Model_ID { get; set; }
+
+        public bool? vehicle_type { get; set; }
+    }
     public class VehicleInfoModel
     {
         public int VehicleRenewalInfo_ID { get; set; }
@@ -496,7 +553,11 @@ namespace Truck.Models
         public string Insurance_Company { get; set; }
 
         public IFormFile filename { get; set; }
+
+        public IFormFile backfilename { get; set; }
         public string extension { get; set; }
+        public string backextension { get; set; }
+
     }
 
     public class VehicleDocumentModelList
@@ -524,16 +585,16 @@ namespace Truck.Models
     public class ListDoc
     {
         public string images { get; set; }
-       
+
     }
-    public  class ContactModel
+    public class ContactModel
     {
         public int Contact_ID { get; set; }
         public string Phone_Number { get; set; }
         public string Request_Type { get; set; }
         public string Message { get; set; }
     }
-    public  class SettingModel
+    public class SettingModel
     {
         public int Settings_ID { get; set; }
         public int? FK_LangID { get; set; }
@@ -542,6 +603,106 @@ namespace Truck.Models
         public int? SMS_Notify { get; set; }
         public int? IVR_Notify { get; set; }
 
-        
+
     }
+
+    public class TopicDetailsModel
+    {
+        public int? Topic_ID { get; set; }
+        public string Topic_Name { get; set; }
+
+        public string Topic_Description { get; set; }
+
+
+
+        public List<EcomTopicCategory> ltsSubCategory { get; set; }
+
+
+
+
+        public List<EcomTopicProduct> lstProduct { get; set; }
+
+
+
+    }
+    public class EcommerceTopicsModel
+    {
+
+        public int Topic_Id { get; set; }
+
+        public string Topic_Name { get; set; }
+
+        public string Topic_Description { get; set; }
+
+        public bool Topic_CategoryYN { get; set; }
+        public string Brand_Image { get; set; }
+        public bool? ADDYN { get; set; }
+        public bool? Slider { get; set; }
+        public List<EcommerceCategoryModel> Names { get; set; }
+    }
+    public class EcommerceCategoryModel
+    {
+
+        public int? ID { get; set; }
+
+        public int? FK_Brandid { get; set; }
+
+        public int? FK_Id { get; set; }
+
+        public string Name { get; set; }
+
+        public string Path { get; set; }
+
+        public bool YN { get; set; }
+    }
+    public class EcomTopicCategory
+    {
+        public int? FK_SubCategory { get; set; }
+        public bool TopicDetails_FrontYN { get; set; }
+
+        public string Product_Sub_Category { get; set; }
+    }
+
+    public class EcomTopicProduct
+    {
+        public int? FK_Productid { get; set; }
+        public bool TopicDetails_FrontYN { get; set; }
+
+        public string name { get; set; }
+    }
+    public  class AppUserModel
+    {
+        
+
+        public int userID { get; set; }
+        public string fullName { get; set; }
+        public string userName { get; set; }
+        public string gender { get; set; }
+        public DateTime? dateOfBirth { get; set; }
+        public string mobile { get; set; }
+        public string email { get; set; }
+        public string dpPath { get; set; }
+        public string AadharCard { get; set; }
+        public string PanCard { get; set; }
+        public string Address { get; set; }
+        public string pincode { get; set; }
+        public int? cityID { get; set; }
+        public int? stateID { get; set; }
+        public int? countryID { get; set; }
+        public int isActive { get; set; }
+        public int IsDeleted { get; set; }
+        public DateTime createdDate { get; set; }
+        public int? referalStatus { get; set; }
+        public int? referalUserId { get; set; }
+        public int? referalTeamId { get; set; }
+        public int? verified { get; set; }
+        public string OTP { get; set; }
+        public DateTime? OTPExpireTime { get; set; }
+        public string Pin { get; set; }
+        public string company { get; set; }
+
+      
+    }
+
+
 }

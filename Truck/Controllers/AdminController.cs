@@ -27,10 +27,12 @@ namespace Truck.Controllers
     {
         private readonly TruckContext _context;
         private readonly IRepos _repos;
-        public AdminController(TruckContext context, IRepos repos)
+        private readonly IStorage _storage;
+        public AdminController(TruckContext context, IRepos repos, IStorage storage)
         {
             _context = context;
             _repos = repos;
+            _storage = storage;
 
         }
 
@@ -292,6 +294,116 @@ namespace Truck.Controllers
             }
         }
 
+        [HttpPost("[action]")]
+        public async Task<ActionResult<ApiResponse<int>>> AddEcomTopic([FromForm] EcomTopicModel form)
+        {
+            try
+            {
+                var query = _context.Ecom_Topics.Where(w => w.Topic_ID == form.Topic_Id && w.isActive == true).Count();
+                if (query == 0)
+                {
+                    Ecom_Topic ecomtopic = new Ecom_Topic();
+                    ecomtopic.Topic_Name = form.Topic_Name;
+                    ecomtopic.Topic_Description = form.Topic_Description;
+                   
+                    ecomtopic.ADDYN = form.ADDYN;
+                    ecomtopic.Slider = form.Slider;
+                    ecomtopic.Topic_CategoryYN = form.Topic_CategoryYN;
+                    string FullPath = await _storage.Save(form.filename, "/product-images", form.extension);
+                    ecomtopic.Brand_Image = FullPath;
+                    ecomtopic.isActive = true;
+
+                    _context.Ecom_Topics.Add(ecomtopic);
+                    await _context.SaveChangesAsync();
+                    return new ApiResponse<int> { code = 1, data = ecomtopic.Topic_ID, message = "Success" };
+
+                }
+                else
+                {
+                    var existingTopic = _context.Ecom_Topics.Where(w => w.Topic_ID == form.Topic_Id && w.isActive == true).FirstOrDefault();
+                    if (form.filename != null)
+                        existingTopic.Brand_Image = await _storage.Save(form.filename, "/product-images", form.extension);
+                    existingTopic.Topic_CategoryYN = form.Topic_CategoryYN;
+                    existingTopic.Topic_Description = form.Topic_Description;
+                    existingTopic.Topic_Name = form.Topic_Name;
+                    existingTopic.Slider = form.Slider;
+                    existingTopic.ADDYN = form.ADDYN;
+                    _context.Ecom_Topics.Update(existingTopic);
+                    await _context.SaveChangesAsync();
+                    return new ApiResponse<int> { code = 1, data = existingTopic.Topic_ID, message = "Success" };
+
+                }
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<int> { code = 0, data = 0 };
+            }
+        }
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult<ApiResponse<int>>> EcomAddTopicProducts(EcomTopicProdDetailsModel model)
+        {
+            Ecom_TopicDetails_Product ecomtopicpoducts = new Ecom_TopicDetails_Product();
+            var lsttopicprod = new List<Ecom_TopicDetails_Product>();
+
+            try
+            {
+                foreach (var models in model.prodlst)
+                {
+                    lsttopicprod.Add(new Ecom_TopicDetails_Product
+                    {
+                        
+                        FK_Productid = models.value,
+                        TopicDetails_FrontYN = false,
+                        FK_Topic_ID = model.FK_Topic_ID,
+                        isActive = true
+                    });
+                }
+                await _context.Ecom_TopicDetails_Products.AddRangeAsync(lsttopicprod);
+                await _context.SaveChangesAsync();
+
+                return new ApiResponse<int> { code = 1, data = ecomtopicpoducts.TopicDetails_Product_ID, message = "Success" };
+
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<int> { code = 1, message = ex.Message };
+            }
+
+        }
+
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult<ApiResponse<int>>> EcomAddTopicSubCategory(EcomTopicSubCatDetailsModel model)
+        {
+            Ecom_TopicDetails_Category ecomtopicpoducts = new Ecom_TopicDetails_Category();
+            var lsttopicprod = new List<Ecom_TopicDetails_Category>();
+
+            try
+            {
+                foreach (var models in model.prodlst)
+                {
+                    lsttopicprod.Add(new Ecom_TopicDetails_Category
+                    {
+                       
+                        FK_SubCategory = models.value,
+                        TopicDetails_FrontYN = false,
+                        FK_Topic_ID = model.FK_Topic_ID,
+                        isActive = true
+                    });
+                }
+                await _context.Ecom_TopicDetails_Categories.AddRangeAsync(lsttopicprod);
+                await _context.SaveChangesAsync();
+
+                return new ApiResponse<int> { code = 1, data = ecomtopicpoducts.TopicDetails_Category_ID, message = "Success" };
+
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<int> { code = 1, message = ex.Message };
+            }
+
+        }
 
 
     }

@@ -229,8 +229,8 @@ namespace Truck
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint(".././swagger/v1/swagger.json", "Truck V1");
-                c.SwaggerEndpoint(".././swagger/v2/swagger.json", "Truck V2");
+                c.SwaggerEndpoint(".././swagger/v1/swagger.json", "TruckV1");
+                c.SwaggerEndpoint(".././swagger/v2/swagger.json", "TruckV2");
               
                 c.RoutePrefix = "swagger";
                 c.DefaultModelExpandDepth(2);

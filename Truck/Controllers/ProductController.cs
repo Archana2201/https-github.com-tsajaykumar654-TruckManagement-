@@ -135,9 +135,9 @@ namespace Truck.Controllers
 
 
         [HttpGet("[action]")]
-        public async Task<ActionResult<IEnumerable<CartModel>>> GetEcomCartDetails(int userid)
+        public async Task<ActionResult<IEnumerable<CartModel>>> GetEcomCartDetails()
         {
-            return await _context.Ecom_ShoppingCarts.Where(x => x.FK_AppUser_Id == userid && x.status == 1).Select(x => new CartModel
+            return await _context.Ecom_ShoppingCarts.Where(x => x.FK_AppUser_Id == _repos.UserID && x.status == 1).Select(x => new CartModel
             {
                 productID = x.FK_Product_Id,
                 ShoppingCart_ID = x.ShoppingCart_ID,
@@ -166,12 +166,12 @@ namespace Truck.Controllers
         }
 
         [HttpDelete("[action]")]
-        public async Task<ActionResult<ApiResponse<int>>> DeleteAllCart(int userid)
+        public async Task<ActionResult<ApiResponse<int>>> DeleteAllCart()
         {
 
             try
             {
-                var cartid = _context.Ecom_ShoppingCarts.Where(x => x.FK_AppUser_Id == userid);
+                var cartid = _context.Ecom_ShoppingCarts.Where(x => x.FK_AppUser_Id == _repos.UserID);
                 if (cartid != null)
                 {
                     _context.Ecom_ShoppingCarts.RemoveRange(_context.Ecom_ShoppingCarts.Where(x => x.FK_AppUser_Id == _repos.UserID));
@@ -263,9 +263,9 @@ namespace Truck.Controllers
         }
 
         [HttpGet("[action]")]
-        public async Task<ActionResult<IEnumerable<EcomShippingModel>>> GetEcomShippingAddress(int userid)
+        public async Task<ActionResult<IEnumerable<EcomShippingModel>>> GetEcomShippingAddress()
         {
-            return await _context.Ecom_Shippings.Where(x => x.FK_AppUser_Id == userid).Select(x => new EcomShippingModel
+            return await _context.Ecom_Shippings.Where(x => x.FK_AppUser_Id == _repos.UserID).Select(x => new EcomShippingModel
             {
                 Shipment_ID = x.Shipment_ID,
                 FK_Order_Id = x.FK_Order_Id,
@@ -385,9 +385,9 @@ namespace Truck.Controllers
         }
 
         [HttpGet("[action]")]
-        public async Task<ActionResult<IEnumerable<EcomOrdersListModel>>> EcomOrderList(int userid)
+        public async Task<ActionResult<IEnumerable<EcomOrdersListModel>>> EcomOrderList()
         {
-            return await _context.Ecom_Orders.Where(x => x.FK_AppUser_Id == userid).Select(x => new EcomOrdersListModel
+            return await _context.Ecom_Orders.Where(x => x.FK_AppUser_Id == _repos.UserID).Select(x => new EcomOrdersListModel
             {
                 Order_ID = x.Order_ID,
                 Order_Status = x.OrderStatusNavigation.OrderStatus,
@@ -480,7 +480,7 @@ namespace Truck.Controllers
         }
 
         [HttpGet("[action]/id")]
-        public async Task<ActionResult<ApiResponse<SelectInvoice>>> EcomProductInvoice(int id)
+        public async Task<ActionResult<ApiResponse<SelectInvoice>>> EcomProductInvoice()
         {
            
             var list = await _context.Ecom_Invoices.Where(y => y.FK_AppUser_Id == _repos.UserID).Select(x => new SelectInvoice
@@ -512,6 +512,35 @@ namespace Truck.Controllers
             }
 
         }
+
+
+
+        [HttpGet("[action]")]
+        public async Task<ActionResult<IEnumerable<ProductModel>>> GetEcomProductsFilteration(int categoryid,  string searchstring)
+        {
+            var query = from s in _context.Products.Where(x => x.isActive == 1) select s;
+            if (!string.IsNullOrEmpty(searchstring))
+            {
+                query = query.Where(x => x.Product_Name.Contains(searchstring));
+            }
+            if (categoryid > 0)
+            {
+                query = query.Where(x => x.FK_ProductCategory_Id == categoryid);
+            }
+            var Newquery = query.Select(x => new ProductModel
+            {
+                productID = x.productID,
+                Product_Name = x.Product_Name,
+                Product_Description = x.Product_Description,
+                Photo_Path = x.Photo_Path,
+                MRP = x.MRP,
+                PercentDiscount = x.PercentDiscount,
+                Product_CompanyAddress = x.Product_CompanyAddress,
+                Product_CompanyContactNo = x.Product_CompanyContactNo,
+            });
+            return await Newquery.ToListAsync();
+        }
+
 
 
 

@@ -76,36 +76,43 @@ namespace Truck.Controllers
 
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<ApiResponse<AppUser>>> UpdateUserProfile(AppUserForm form)
+        public async Task<ActionResult<ApiResponse<AppUserModel>>> UpdateUserProfile([FromForm] AppUserForm form)
         {
             if (string.IsNullOrEmpty(form.email) || string.IsNullOrEmpty(form.fullName) || string.IsNullOrEmpty(form.mobile))
             {
-                return new ApiResponse<AppUser> { code = 0, message = "Null Values" };
+                return new ApiResponse<AppUserModel> { code = 0, message = "Null Values" };
             }
             var appUser = await _context.AppUsers.FindAsync(_repos.mobile);
-            if (!string.IsNullOrEmpty(form.profileImage))
+            if (form.profileImage.Length > 0)
             {
                 if (appUser.dpPath != "/images/profile-picture/default.png")
                 {
                     await _storage.DeleteIfExists(appUser.dpPath);
                 }
-                appUser.dpPath = await _storage.Save(form.profileImage, "/profile-picture");
+
+                string dpPath = await _storage.Save(form.profileImage, "/profile-picture", form.Profileextension);
+                appUser.dpPath = dpPath;
             }
-            if (!string.IsNullOrEmpty(form.aadharcard))
+            if (form.aadharcard.Length > 0)
             {
                 if (appUser.AadharCard != "/images/profile-picture/default.png")
                 {
                     await _storage.DeleteIfExists(appUser.AadharCard);
                 }
-                appUser.AadharCard = await _storage.Save(form.aadharcard, "/profile-picture");
+                string straadharCard = await _storage.Save(form.aadharcard, "/profile-picture", form.aadharcardextension);
+                appUser.AadharCard = straadharCard;
+
             }
-            if (!string.IsNullOrEmpty(form.pancard))
+            if (form.pancard.Length > 0)
             {
                 if (appUser.PanCard != "/images/profile-picture/default.png")
                 {
                     await _storage.DeleteIfExists(appUser.PanCard);
                 }
-                appUser.PanCard = await _storage.Save(form.pancard, "/profile-picture");
+                //appUser.PanCard = await _storage.Save(form.pancard, "/profile-picture");
+
+                string strPanCard = await _storage.Save(form.pancard, "/profile-picture", form.pancardextension);
+                appUser.PanCard = strPanCard;
             }
 
             appUser.fullName = form.fullName;
@@ -127,11 +134,22 @@ namespace Truck.Controllers
             }
             catch (Exception ex)
             {
-                return new ApiResponse<AppUser> { code = 0, message = "Error" };
+                return new ApiResponse<AppUserModel> { code = 0, message = "Error" };
             }
-            return new ApiResponse<AppUser> { code = 1, message = "Success" };
+            return new ApiResponse<AppUserModel> { code = 1, message = "Success" };
         }
 
+
+        [HttpGet("[action]")]
+        public async Task<ActionResult<ApiResponse<List<Select>>>> LanguageDDL()
+        {
+            var list = await _context.Language_Masters.Select(x => new Select
+            {
+                name = x.Language,
+                value = x.Language_ID
+            }).ToListAsync();
+            return new ApiResponse<List<Select>> { code = 1, data = list };
+        }
 
         [HttpGet("[action]")]
         public async Task<ActionResult<ApiResponse<List<Select>>>> VehicleCompanyDDL()
@@ -201,7 +219,7 @@ namespace Truck.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<ApiResponse<VehicleInfoModel>>> CreateOrUpdateVehicle(VehicleInfoModel model)
+        public async Task<ActionResult<ApiResponse<VehicleCreateModel>>> CreateOrUpdateVehicle(VehicleCreateModel model)
         {
             try
             {
@@ -222,11 +240,11 @@ namespace Truck.Controllers
 
                 await _context.SaveChangesAsync();
 
-                return new ApiResponse<VehicleInfoModel> { code = 1, message = "Successfull" };
+                return new ApiResponse<VehicleCreateModel> { code = 1, message = "Successfull" };
             }
             catch (Exception ex)
             {
-                return new ApiResponse<VehicleInfoModel> { code = 0, message = ex.Message, data = null };
+                return new ApiResponse<VehicleCreateModel> { code = 0, message = ex.Message, data = null };
             }
         }
 
@@ -358,6 +376,22 @@ namespace Truck.Controllers
 
             }).ToListAsync();
         }
+
+        [HttpGet("[action]")]
+        public async Task<ActionResult<IEnumerable<VehicleInfoModel>>> VehicleByID(int vehicleid)
+        {
+            return await _context.Vehicle_Renewal_Infos.Where(w => w.VehicleRenewalInfo_ID == vehicleid).Select(x => new VehicleInfoModel
+            {
+                VehicleRenewalInfo_ID = x.VehicleRenewalInfo_ID,
+                Vehicle_Number = x.Vehicle_Number,
+                Vehicle_Model_ID = x.Vehicle_Model_ID,
+                Vehicle_ModelNumber = x.Vehicle_ModelNumber,
+                Vehicle_Company_ID = x.Vehicle_Company_ID,
+                vehicle_type = x.vehicle_type
+            }).ToListAsync();
+        }
+
+
         [HttpPost("[action]")]
         public async Task<ActionResult<ApiResponse<InsuranceRenewedModel>>> UploadInsuranceRenewal(InsuranceRenewedModel model)
         {
@@ -366,24 +400,30 @@ namespace Truck.Controllers
                 var vehicle = await _context.Insurance_Reneweds.Where(x => x.InsuranceRenewed_ID == model.InsuranceRenewed_ID).FirstOrDefaultAsync();
                 Insurance_Renewed vehicledocs = (vehicle == null) ? new Insurance_Renewed() : vehicle;
 
+
+
                 if (!string.IsNullOrEmpty(model.Vehicle_FrontImage))
                 {
                     if (vehicledocs.Vehicle_FrontImage != "/images/profile-picture/default.png")
                     {
                         await _storage.DeleteIfExists(vehicledocs.Vehicle_FrontImage);
                     }
-
-                    vehicledocs.Vehicle_FrontImage = await _storage.Save(model.filename, "/Vehicle - Docs", model.extension);
+                    string frontFullPath = await _storage.Save(model.filename, "/Vehicle - Docs", model.extension);
+                    vehicledocs.Vehicle_FrontImage = frontFullPath;
                 }
+
+
                 if (!string.IsNullOrEmpty(model.Vehicle_BackImage))
                 {
                     if (vehicledocs.Vehicle_BackImage != "/images/profile-picture/default.png")
                     {
                         await _storage.DeleteIfExists(vehicledocs.Vehicle_BackImage);
                     }
-
-                    vehicledocs.Vehicle_BackImage = await _storage.Save(model.filename, "/Vehicle - Docs", model.extension);
+                    string backFullPath = await _storage.Save(model.backfilename, "/Vehicle - Docs", model.backextension);
+                    vehicledocs.Vehicle_BackImage = backFullPath;
                 }
+
+
 
                 vehicledocs.Registered_Date = model.Registered_Date;
                 vehicledocs.Expiry_Date = model.Expiry_Date;
@@ -420,15 +460,15 @@ namespace Truck.Controllers
 
 
         [HttpGet("[action]")]
-        public async Task<ActionResult<ApiResponse<IEnumerable<DocList>>>> GetDocListYearwise(int userid)
+        public async Task<ActionResult<ApiResponse<IEnumerable<DocList>>>> GetDocListYearwise()
         {
             try
             {
-                var query = await _context.Vehicle_Documents.Where(w => w.FK_APPUSERID == userid).Select(s => new DocList
+                var query = await _context.Vehicle_Documents.Where(w => w.FK_APPUSERID == _repos.UserID).Select(s => new DocList
                 {
                     year = s.Registered_Date.ToString("yyyy"),
 
-                    doclists = _context.Vehicle_Documents.Where(a => a.FK_APPUSERID == userid).Select(i => new ListDoc
+                    doclists = _context.Vehicle_Documents.Where(a => a.FK_APPUSERID == _repos.UserID).Select(i => new ListDoc
                     {
 
                         images = i.Vehicle_FrontImage,
@@ -443,7 +483,117 @@ namespace Truck.Controllers
             }
         }
 
+        [HttpGet("[action]")]
+        public async Task<ActionResult<IEnumerable<AppUserModel>>> GetProfile()
+        {
+            return await _context.AppUsers.Where(w => w.userID == _repos.UserID).Select(x => new AppUserModel
+            {
+                fullName = x.fullName,
+                company = x.company,
+                email = x.email,
+                stateID = x.stateID,
+                cityID = x.cityID,
+                Address = x.Address,
+                countryID = x.countryID,
+                gender = x.gender,
+                pincode = x.pincode,
+                dateOfBirth = x.dateOfBirth,
+            }).ToListAsync();
+        }
 
+
+        [HttpGet("[action]")]
+        public async Task<ActionResult<IEnumerable<TopicDetailsModel>>> GetEcom_Topic(int brandid, int pageindex)
+        {
+            var lstCategory = new List<EcomTopicCategory>();
+            var lstProduct = new List<EcomTopicProduct>();
+
+            var catresult = _context.Ecom_Topics.Where(x => x.isActive == true).Take(pageindex);
+            foreach (var models in catresult)
+            {
+                if (models.Topic_CategoryYN == true)
+                {
+                    var subcatlist = _context.Ecom_TopicDetails_Categories.Where(x => x.FK_Topic_ID == models.Topic_ID && x.isActive == true).FirstOrDefault();
+                    if (subcatlist != null)
+                    {
+                        lstCategory.Add(new EcomTopicCategory
+                        {
+                            FK_SubCategory = subcatlist.FK_SubCategory,
+                            TopicDetails_FrontYN = subcatlist.TopicDetails_FrontYN,
+
+                        });
+                    }
+                }
+                else
+                {
+                    var subprodlist = _context.Ecom_TopicDetails_Products.Include(y => y.FK_Product).Where(x => x.FK_Topic_ID == models.Topic_ID && x.isActive == true).FirstOrDefault();
+                    if (subprodlist != null)
+                    {
+                        lstProduct.Add(new EcomTopicProduct
+                        {
+                            FK_Productid = subprodlist.FK_Productid,
+                            TopicDetails_FrontYN = subprodlist.TopicDetails_FrontYN,
+                            name = subprodlist.FK_Product.Product_Name,
+                        });
+                    }
+                }
+            }
+
+            return await _context.Ecom_Topics.Take(pageindex).Select(x => new TopicDetailsModel
+            {
+                Topic_ID = x.Topic_ID,
+                Topic_Name = x.Topic_Name,
+                ltsSubCategory = lstCategory,
+                lstProduct = lstProduct
+            }).ToListAsync();
+        }
+
+        [HttpGet("[action]")]
+        public async Task<ActionResult<ApiResponse<IEnumerable<EcommerceTopicsModel>>>> EcomTopic()
+        {
+            try
+            {
+                var query = (from s in _context.Ecom_Topics
+                             where s.isActive == true
+                             select new EcommerceTopicsModel
+                             {
+                                 Topic_Name = s.Topic_Name,
+                                 Topic_Description = s.Topic_Description,
+                                 Brand_Image = s.Brand_Image,
+                                 ADDYN = s.ADDYN,
+                                 Slider = s.Slider,
+                                 Topic_Id = s.Topic_ID,
+                                 Topic_CategoryYN = s.Topic_CategoryYN,
+                                 Names = s.Topic_CategoryYN == false ? _context.Ecom_TopicDetails_Products.Where(w => w.FK_Topic_ID == s.Topic_ID && w.isActive == true)
+                             .Select(r => new EcommerceCategoryModel
+                             {
+                                 ID = r.TopicDetails_Product_ID,
+                                 FK_Id = r.FK_Productid,
+                                 YN = r.TopicDetails_FrontYN,
+                                 Name = _context.Products.Where(w => w.productID == r.FK_Productid).Select(q => q.Product_Name).FirstOrDefault(),
+                                 Path = _context.Products.Where(t => t.productID == r.FK_Productid).Select(q => q.Photo_Path).FirstOrDefault(),
+
+                             }).ToList() :
+                             _context.Ecom_TopicDetails_Categories.Where(w => w.FK_Topic_ID == s.Topic_ID && s.isActive == true).Select(r => new EcommerceCategoryModel
+                             {
+                                 ID = r.TopicDetails_Category_ID,
+                                 FK_Id = r.FK_SubCategory,
+                                 YN = r.TopicDetails_FrontYN,
+
+                             }).ToList(),
+                             }).ToList();
+                List<EcommerceTopicsModel> ecommerceTopicsModels = new List<EcommerceTopicsModel>();
+                if (query != null)
+                {
+                    ecommerceTopicsModels.AddRange(query);
+                }
+                return new ApiResponse<IEnumerable<EcommerceTopicsModel>> { code = 1, message = "Dashboard Contents", data = ecommerceTopicsModels };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<IEnumerable<EcommerceTopicsModel>> { code = 1, message = ex.Message, data = null };
+            }
+        }
 
     }
 }

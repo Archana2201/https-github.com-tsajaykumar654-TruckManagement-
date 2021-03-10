@@ -34,6 +34,9 @@ namespace Truck.Entity
         public virtual DbSet<Ecom_Payment> Ecom_Payments { get; set; }
         public virtual DbSet<Ecom_Shipping> Ecom_Shippings { get; set; }
         public virtual DbSet<Ecom_ShoppingCart> Ecom_ShoppingCarts { get; set; }
+        public virtual DbSet<Ecom_Topic> Ecom_Topics { get; set; }
+        public virtual DbSet<Ecom_TopicDetails_Category> Ecom_TopicDetails_Categories { get; set; }
+        public virtual DbSet<Ecom_TopicDetails_Product> Ecom_TopicDetails_Products { get; set; }
         public virtual DbSet<GST> GSTs { get; set; }
         public virtual DbSet<Insurance> Insurances { get; set; }
         public virtual DbSet<Insurance_Renewed> Insurance_Reneweds { get; set; }
@@ -54,13 +57,15 @@ namespace Truck.Entity
         public virtual DbSet<Truck_RenewalType> Truck_RenewalTypes { get; set; }
         public virtual DbSet<Vehicle_Company_Master> Vehicle_Company_Masters { get; set; }
         public virtual DbSet<Vehicle_Document> Vehicle_Documents { get; set; }
+        public virtual DbSet<Vehicle_Master> Vehicle_Masters { get; set; }
         public virtual DbSet<Vehicle_Model_Master> Vehicle_Model_Masters { get; set; }
         public virtual DbSet<Vehicle_Period> Vehicle_Periods { get; set; }
         public virtual DbSet<Vehicle_Renewal_Info> Vehicle_Renewal_Infos { get; set; }
         public virtual DbSet<Vehicle_Renewal_Master> Vehicle_Renewal_Masters { get; set; }
         public virtual DbSet<Wallet> Wallets { get; set; }
 
-        
+       
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasAnnotation("Relational:Collation", "SQL_Latin1_General_CP1_CI_AS");
@@ -521,6 +526,57 @@ namespace Truck.Entity
                     .HasConstraintName("Ecom_ShoppingCart$FK_Product_Id");
             });
 
+            modelBuilder.Entity<Ecom_Topic>(entity =>
+            {
+                entity.HasKey(e => e.Topic_ID)
+                    .HasName("Pk_Topic_ID");
+
+                entity.ToTable("Ecom_Topic");
+
+                entity.Property(e => e.Brand_Image)
+                    .HasMaxLength(200)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Topic_Description)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Topic_Name)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+            });
+
+            modelBuilder.Entity<Ecom_TopicDetails_Category>(entity =>
+            {
+                entity.HasKey(e => e.TopicDetails_Category_ID)
+                    .HasName("Pk_TopicDetails_Category_ID");
+
+                entity.ToTable("Ecom_TopicDetails_Category");
+
+                entity.HasOne(d => d.FK_Topic)
+                    .WithMany(p => p.Ecom_TopicDetails_Categories)
+                    .HasForeignKey(d => d.FK_Topic_ID)
+                    .HasConstraintName("TopicDetailsCategory_fkFK_Topicid");
+            });
+
+            modelBuilder.Entity<Ecom_TopicDetails_Product>(entity =>
+            {
+                entity.HasKey(e => e.TopicDetails_Product_ID)
+                    .HasName("Pk_TopicDetails_Product_ID");
+
+                entity.ToTable("Ecom_TopicDetails_Product");
+
+                entity.HasOne(d => d.FK_Product)
+                    .WithMany(p => p.Ecom_TopicDetails_Products)
+                    .HasForeignKey(d => d.FK_Productid)
+                    .HasConstraintName("TopicDetailsProduct_fkFK_Subcategoryid");
+
+                entity.HasOne(d => d.FK_Topic)
+                    .WithMany(p => p.Ecom_TopicDetails_Products)
+                    .HasForeignKey(d => d.FK_Topic_ID)
+                    .HasConstraintName("TopicDetailsProduct_fkFK_Topicid");
+            });
+
             modelBuilder.Entity<GST>(entity =>
             {
                 entity.HasKey(e => e.GST_ID)
@@ -979,6 +1035,18 @@ namespace Truck.Entity
                     .HasConstraintName("FK_Vehicle_RenewalInfoID__Vehicle_Documents");
             });
 
+            modelBuilder.Entity<Vehicle_Master>(entity =>
+            {
+                entity.HasKey(e => e.VehicleType_ID)
+                    .HasName("PK_Vehicle_Type_Master");
+
+                entity.ToTable("Vehicle_Master");
+
+                entity.Property(e => e.VehicleType_Name)
+                    .HasMaxLength(250)
+                    .IsUnicode(false);
+            });
+
             modelBuilder.Entity<Vehicle_Model_Master>(entity =>
             {
                 entity.HasKey(e => e.VehicleModel_ID);
@@ -1046,6 +1114,11 @@ namespace Truck.Entity
                     .HasForeignKey(d => d.FK_Period_ID)
                     .HasConstraintName("FK_FK_Period_ID");
 
+                entity.HasOne(d => d.FK_VehicleMaster)
+                    .WithMany(p => p.Vehicle_Renewal_Infos)
+                    .HasForeignKey(d => d.FK_VehicleMaster_ID)
+                    .HasConstraintName("FK_Vehiclemasterid_FK");
+
                 entity.HasOne(d => d.FK_VehicleRenewal)
                     .WithMany(p => p.Vehicle_Renewal_Infos)
                     .HasForeignKey(d => d.FK_VehicleRenewal_ID)
@@ -1071,6 +1144,11 @@ namespace Truck.Entity
                 entity.Property(e => e.VehicleRenewal_Name)
                     .HasMaxLength(250)
                     .IsUnicode(false);
+
+                entity.HasOne(d => d.FK_VehicleMaster)
+                    .WithMany(p => p.Vehicle_Renewal_Masters)
+                    .HasForeignKey(d => d.FK_VehicleMaster_ID)
+                    .HasConstraintName("FK_Vehiclemasterid");
             });
 
             modelBuilder.Entity<Wallet>(entity =>
