@@ -74,7 +74,7 @@ namespace Truck.Controllers
             }).ToListAsync();
         }
 
-
+        [AllowAnonymous]
         [HttpPost("[action]")]
         public async Task<ActionResult<ApiResponse<AppUserModel>>> UpdateUserProfile([FromForm] AppUserForm form)
         {
@@ -139,7 +139,7 @@ namespace Truck.Controllers
             return new ApiResponse<AppUserModel> { code = 1, message = "Success" };
         }
 
-
+        [AllowAnonymous]
         [HttpGet("[action]")]
         public async Task<ActionResult<ApiResponse<List<Select>>>> LanguageDDL()
         {
@@ -483,6 +483,7 @@ namespace Truck.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("[action]")]
         public async Task<ActionResult<IEnumerable<AppUserModel>>> GetProfile()
         {

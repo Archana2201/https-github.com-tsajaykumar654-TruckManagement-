@@ -47,22 +47,22 @@ namespace Truck.Controllers
         }
 
 
-        [HttpGet("[action]")]
-        public async Task<ActionResult<IEnumerable<ProductModel>>> EProductList()
-        {
-            return await _context.Products.Select(x => new ProductModel
-            {
-                productID = x.productID,
-                Product_Name = x.Product_Name,
-                Product_Description = x.Product_Description,
-                Photo_Path = x.Photo_Path,
-                MRP = x.MRP,
-                PercentDiscount = x.PercentDiscount,
-                Product_CompanyAddress = x.Product_CompanyAddress,
-                Product_CompanyContactNo = x.Product_CompanyContactNo,
+        //[HttpGet("[action]")]
+        //public async Task<ActionResult<IEnumerable<ProductModel>>> EProductList()
+        //{
+        //    return await _context.Products.Select(x => new ProductModel
+        //    {
+        //        productID = x.productID,
+        //        Product_Name = x.Product_Name,
+        //        Product_Description = x.Product_Description,
+        //        Photo_Path = x.Photo_Path,
+        //        MRP = x.MRP,
+        //        PercentDiscount = x.PercentDiscount,
+        //        Product_CompanyAddress = x.Product_CompanyAddress,
+        //        Product_CompanyContactNo = x.Product_CompanyContactNo,
 
-            }).ToListAsync();
-        }
+        //    }).ToListAsync();
+        //}
 
 
         [HttpPost("[action]")]
